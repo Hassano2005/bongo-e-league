@@ -1,9 +1,19 @@
-// ... rest of your server code ...
+// 1. IMPORTS
+const express = require('express');
+const cors = require('cors');
+const { pool, dbReady } = require('./db'); // ✅ Correct path
 
-// ✅ CORRECT: require from root since db.js is at root level
-const { pool, dbReady } = require('./db');
+// 2. INIT EXPRESS APP
+const app = express(); // ✅ This line MUST exist!
+app.use(cors());
+app.use(express.json());
 
-// Wait for DB before starting server
+// 3. YOUR ROUTES
+app.get('/', (req, res) => res.send('🎮 Bongo eLeague API'));
+app.use('/api/users', require('./routes/users')); // example
+// ... other routes ...
+
+// 4. WAIT FOR DB, THEN START SERVER
 dbReady.then(() => {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, '0.0.0.0', () => {
