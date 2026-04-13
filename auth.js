@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../db'); // ✅ Destructure to get the pool instance
+const { pool } = require('./db'); // ✅ Same folder
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_bongo_key_change_me_later';
 
