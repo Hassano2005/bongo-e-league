@@ -1,8 +1,8 @@
 // server.js - With Authentication Integrated
 const express = require('express');
 const cors = require('cors');
-const { pool, dbReady } = require('./db'); // ✅ db.js is at root
-
+// In server.js
+const authRouter = require('./auth'); // ✅ No /routes/ prefix
 const app = express();
 app.use(cors());
 app.use(express.json());
