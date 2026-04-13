@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard — Bongo eLeague</title>
+    <meta name="description" content="Top eFootball players in Tanzania ranked by points, wins, and performance.">
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 1.5rem;
+            text-align: center;
+            gap: 0.75rem;
+        }
+        .empty-icon {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(0,210,255,0.07);
+            border: 2px solid rgba(0,210,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .empty-title { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text-light); }
+        .empty-sub { font-size: 0.84rem; color: var(--text-dim); max-width: 300px; line-height: 1.6; }
+
+        /* Podium placeholder */
+        .podium-placeholder {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 1rem;
+            padding: 3rem 2rem 0;
+            opacity: 0.2;
+        }
+        .podium-ph-block {
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 1rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px dashed rgba(255,255,255,0.1);
+            border-bottom: none;
+        }
+        .podium-ph-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--text-dim);
+        }
+
+        .search-input-wrap { position: relative; }
+        .search-input-wrap i { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 0.9rem; }
+        .search-input { width: 240px; padding: 0.6rem 1rem 0.6rem 2.4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); border-radius: 20px; color: var(--text-light); font-size: 0.88rem; outline: none; transition: all 0.2s; }
+        .search-input:focus { border-color: var(--primary); background: rgba(0,210,255,0.06); }
+        .search-input::placeholder { color: var(--text-dim); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="home.html" class="nav-logo">BONGO <span>eLEAGUE</span></a>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="tournaments.html"><i class="fas fa-trophy"></i> Tournaments</a></li>
+        <li><a href="leaderboard.html" class="active"><i class="fas fa-chart-bar"></i> Leaderboard</a></li>
+        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+    </ul>
+    <div class="nav-actions">
+        <span class="nav-badge">BETA</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'"><i class="fas fa-user" style="font-size:0.85rem;"></i></div>
+        <button class="nav-hamburger" id="navHamburger"><span></span><span></span><span></span></button>
+    </div>
+</nav>
+
+<div class="page-wrapper">
+    <div class="hero-banner" style="height:220px;">
+        <div class="hero-content">
+            <div class="hero-tag"><i class="fas fa-chart-bar"></i> Rankings</div>
+            <h1 class="hero-title"><span class="gradient-text">Season 1 Leaderboard</span></h1>
+            <p class="hero-sub">Points are earned from tournament wins, goal difference, and fair play score.</p>
+        </div>
+    </div>
+
+    <!-- PODIUM PLACEHOLDER (visual only, no data) -->
+    <div style="background:linear-gradient(to bottom,rgba(0,210,255,0.03),transparent);border-bottom:1px solid var(--border-light);padding-bottom:2rem;">
+        <div style="max-width:1200px;margin:0 auto;">
+            <div class="podium-placeholder">
+                <div class="podium-ph-block" style="width:120px;height:100px;">
+                    <div class="podium-ph-num">2</div>
+                </div>
+                <div class="podium-ph-block" style="width:120px;height:150px;">
+                    <div class="podium-ph-num">1</div>
+                </div>
+                <div class="podium-ph-block" style="width:120px;height:80px;">
+                    <div class="podium-ph-num">3</div>
+                </div>
+            </div>
+            <div style="text-align:center;padding:1.5rem;font-size:0.82rem;color:var(--text-dim);">
+                <i class="fas fa-clock" style="margin-right:6px;"></i>Rankings will fill in once players compete in tournaments
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab active"><i class="fas fa-globe"></i> Overall</button>
+            <button class="tab"><i class="fas fa-calendar-week"></i> This Week</button>
+            <button class="tab"><i class="fas fa-calendar"></i> This Month</button>
+        </div>
+
+        <!-- CONTROLS -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
+            <div style="font-size:0.88rem;color:var(--text-muted);" id="rankedCountTxt">0 players ranked</div>
+            <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-input" placeholder="Search player...">
+            </div>
+        </div>
+
+        <!-- RECORDS -->
+        <div style="margin-bottom: 2.5rem;">
+            <div style="display:flex;align-items:center;gap:15px;margin-bottom:1rem;">
+                <h2 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;"><i class="fas fa-fire" style="color:var(--accent);"></i> All-Time Records</h2>
+                <div style="height:1px;flex:1;background:var(--border-light);"></div>
+            </div>
+            <div class="card" id="recordsContainer" style="display:flex;gap:1rem;overflow-x:auto;padding:1.5rem;">
+                <div style="width:100%;text-align:center;color:var(--text-muted);font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+        </div>
+
+        <!-- TABLE HEADER + EMPTY STATE -->
+        <div class="card" style="overflow:hidden;">
+            <div style="display:grid;grid-template-columns:50px 1fr 100px 80px 80px 100px;align-items:center;gap:0.5rem;padding:0.75rem 1.25rem;background:rgba(0,0,0,0.2);font-size:0.72rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">
+                <div>Rank</div>
+                <div>Player</div>
+                <div style="text-align:right;">Win Rate</div>
+                <div style="text-align:right;">Wins</div>
+                <div style="text-align:right;">Games</div>
+                <div style="text-align:right;">Points</div>
+            </div>
+            <div class="empty-state" style="padding:3rem 1.5rem;">
+                <div class="empty-icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="empty-title">No Rankings Yet</div>
+                <div class="empty-sub">The leaderboard will update automatically as players compete in tournaments.</div>
+                <a href="tournaments.html" class="btn btn-outline btn-sm" style="margin-top:0.5rem;"><i class="fas fa-trophy"></i> View Tournaments</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-bottom" style="max-width:1200px;margin:0 auto;border-top:none;padding-top:0;">
+        <span>© 2025 Bongo eLeague</span>
+        <span>Made in 🇹🇿 Tanzania</span>
+    </div>
+</footer>
+
+<script src="main.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const res = await fetch('/api/leaderboard');
+            const data = await res.json();
+            
+            if (data && data.length > 0) {
+                const listCard = document.querySelector('.card .empty-state').parentElement;
+                
+                let html = `<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:50px 1fr 100px 80px 80px 100px;align-items:center;gap:0.5rem;padding:0.75rem 1.25rem;background:rgba(0,0,0,0.2);font-size:0.72rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">
+                                <div>Rank</div>
+                                <div>Player</div>
+                                <div style="text-align:right;">Win Rate</div>
+                                <div style="text-align:right;">Wins</div>
+                                <div style="text-align:right;">Games</div>
+                                <div style="text-align:right;">Points</div>
+                            </div>`;
+                data.forEach((p, index) => {
+                    html += `<div style="display:grid;grid-template-columns:50px 1fr 100px 80px 80px 100px;align-items:center;gap:0.5rem;padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.05);font-size:0.85rem;">
+                                <div><strong style="color:var(--primary);">#${index + 1}</strong></div>
+                                <div style="font-weight:bold; color:var(--text-light);">${p.username}</div>
+                                <div style="text-align:right; color:var(--text-dim);">-</div>
+                                <div style="text-align:right; font-weight:bold; color:var(--accent-gold);">${p.podiums || 0}</div>
+                                <div style="text-align:right; color:var(--text-dim);">-</div>
+                                <div style="text-align:right; color:var(--primary); font-weight:bold;">${p.points || 0}</div>
+                             </div>`;
+                });
+                html += '</div>';
+                
+                listCard.innerHTML = html;
+                document.getElementById('rankedCountTxt').textContent = `${data.length} players ranked (Podiums only)`;
+                
+                // Update Podium Visualization (top 3)
+                if (data.length >= 1) {
+                    const pd = document.querySelector('.podium-placeholder');
+                    pd.style.opacity = '1';
+                    pd.innerHTML = '';
+                    
+                    const top1 = data[0] ? data[0].username : '';
+                    const top2 = data[1] ? data[1].username : '';
+                    const top3 = data[2] ? data[2].username : '';
+                    
+                    if (data[1]) {
+                        pd.innerHTML += `<div class="podium-ph-block" style="width:120px;height:100px;">
+                            <div style="font-size:0.75rem; font-weight:700; color:var(--text-light); margin-bottom:10px;">${top2}</div>
+                            <div class="podium-ph-num" style="color:#C0C0C0;">2</div>
+                        </div>`;
+                    }
+                    if (data[0]) {
+                        pd.innerHTML += `<div class="podium-ph-block" style="width:120px;height:150px; background:rgba(245, 166, 35, 0.1); border-color:rgba(245, 166, 35, 0.3);">
+                            <div style="font-size:0.85rem; font-weight:700; color:var(--accent-gold); margin-bottom:10px;">${top1}</div>
+                            <div class="podium-ph-num" style="color:var(--accent-gold);">1</div>
+                        </div>`;
+                    }
+                    if (data[2]) {
+                        pd.innerHTML += `<div class="podium-ph-block" style="width:120px;height:80px;">
+                            <div style="font-size:0.75rem; font-weight:700; color:var(--text-light); margin-bottom:10px;">${top3}</div>
+                            <div class="podium-ph-num" style="color:#CD7F32;">3</div>
+                        </div>`;
+                    }
+                }
+            }
+            
+            // Load Records
+            try {
+                const recRes = await fetch('/api/leaderboard/records');
+                const recData = await recRes.json();
+                if(recData.topScorers && recData.topScorers.length > 0) {
+                    let rHtml = '';
+                    recData.topScorers.forEach(r => {
+                        rHtml += `<div style="min-width:200px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:1.5rem;text-align:center;">
+                            <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;"><i class="fas fa-futbol" style="margin-right:5px;"></i> Most Goals</div>
+                            <div style="font-size:2.5rem;font-family:'Orbitron',sans-serif;font-weight:900;color:var(--primary);margin-bottom:0.5rem;text-shadow:0 0 15px rgba(0,210,255,0.3);">${r.max_goals}</div>
+                            <div style="font-weight:700;color:var(--text-light);">${r.username}</div>
+                        </div>`;
+                    });
+                    document.getElementById('recordsContainer').innerHTML = rHtml;
+                } else {
+                    document.getElementById('recordsContainer').innerHTML = '<div style="width:100%;text-align:center;color:var(--text-muted);font-size:0.85rem;padding:1rem;">No match records established yet.</div>';
+                }
+            } catch(e) {
+                console.error('Failed to load records', e);
+            }
+        } catch(err) {
+            console.error('Failed to load leaderboard', err);
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile — Bongo eLeague</title>
+    <meta name="description" content="View your eFootball stats, match history, achievements and tournament results on Bongo eLeague.">
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .profile-header {
+            position: relative;
+            padding: 4rem 2rem 3rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-light);
+            background: linear-gradient(to bottom, rgba(0, 210, 255, 0.03) 0%, transparent 100%);
+        }
+        
+        .profile-header-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-avatar-box {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            padding: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            box-shadow: 0 0 40px rgba(0, 210, 255, 0.2);
+            animation: glow-pulse 3s infinite alternate;
+        }
+
+        @keyframes glow-pulse {
+            0% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.2), 0 0 40px rgba(255, 0, 127, 0.1); transform: scale(1); }
+            100% { box-shadow: 0 0 40px rgba(0, 210, 255, 0.4), 0 0 60px rgba(255, 0, 127, 0.3); transform: scale(1.02); }
+        }
+
+        .profile-avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #0c1422;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--text-light);
+            overflow: hidden;
+        }
+
+        .profile-main-info {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .profile-badge-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-name-h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+            letter-spacing: 1px;
+        }
+
+        .profile-stats-mini {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .mini-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mini-stat-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .mini-stat-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 960px) {
+            .profile-grid { grid-template-columns: 1fr; }
+            .profile-header-inner { justify-content: center; text-align: center; }
+            .profile-badge-row { justify-content: center; }
+            .profile-stats-mini { justify-content: center; }
+        }
+
+        .stat-card-premium {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-premium:hover {
+            background: rgba(0, 210, 255, 0.04);
+            border-color: var(--border);
+            transform: translateY(-5px);
+        }
+
+        .empty-placeholder {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body class="animate-in">
+
+<nav class="navbar">
+    <a href="home.html" class="nav-logo">BONGO <span>eLEAGUE</span></a>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="tournaments.html"><i class="fas fa-trophy"></i> Tournaments</a></li>
+        <li><a href="leaderboard.html"><i class="fas fa-chart-bar"></i> Leaderboard</a></li>
+        <li><a href="profile.html" class="active"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+    </ul>
+    <div class="nav-actions">
+        <span class="nav-badge">BETA</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'"><i class="fas fa-user" style="font-size:0.85rem;"></i></div>
+        <button class="nav-hamburger" id="navHamburger"><span></span><span></span><span></span></button>
+    </div>
+</nav>
+
+<div class="page-wrapper">
+
+    <!-- HEADER -->
+    <header class="profile-header">
+        <div class="profile-header-inner">
+            <div class="profile-avatar-box">
+                <div class="profile-avatar-inner">
+                    <i class="fas fa-user-ninja"></i>
+                </div>
+            </div>
+            <div class="profile-main-info">
+                <div class="profile-badge-row">
+                    <span class="badge badge-admin"><i class="fas fa-certificate"></i> Newcomer</span>
+                    <span class="badge badge-upcoming"><i class="fas fa-star"></i> Season 1</span>
+                </div>
+                <h1 class="profile-name-h1">Hassan Mahmudu</h1>
+                <p style="color:var(--text-muted); font-size:0.9rem;">
+                    <i class="fas fa-map-marker-alt" style="color:var(--primary); margin-right:5px;"></i> Dar es Salaam, Tanzania
+                </p>
+                
+                <div class="profile-stats-mini">
+                    <div class="mini-stat">
+                        <span class="mini-stat-val">0</span>
+                        <span class="mini-stat-label">Wins</span>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-val">0</span>
+                        <span class="mini-stat-label">Played</span>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-val">TZS 0</span>
+                        <span class="mini-stat-label">Earned</span>
+                    </div>
+                </div>
+
+                <div style="margin-top:1.5rem; display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-primary btn-sm" onclick="openModal('editProfileModal')"><i class="fas fa-pen"></i> Edit Profile</button>
+                    <button class="btn btn-ghost btn-sm"><i class="fas fa-share-alt"></i> Share Profile</button>
+                    <button class="btn btn-outline btn-sm" style="color:var(--accent); border-color:var(--accent);"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="section" style="padding-top:0;">
+        <div class="profile-grid">
+            
+            <!-- LEFT CONTENT -->
+            <div style="display:flex; flex-direction:column; gap:2rem;">
+                
+                <!-- Detailed Stats Grid -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1rem;">
+                    <div class="stat-card-premium">
+                        <div style="font-family:'Orbitron',sans-serif; font-size:1.5rem; font-weight:700; color:var(--primary);">0</div>
+                        <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Goals Scored</div>
+                    </div>
+                    <div class="stat-card-premium">
+                        <div style="font-family:'Orbitron',sans-serif; font-size:1.5rem; font-weight:700; color:var(--green);">0%</div>
+                        <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Win Rate</div>
+                    </div>
+                    <div class="stat-card-premium">
+                        <div style="font-family:'Orbitron',sans-serif; font-size:1.5rem; font-weight:700; color:var(--accent-gold);">0</div>
+                        <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Points</div>
+                    </div>
+                </div>
+
+                <!-- Match History -->
+                <div class="card">
+                    <div class="section-header" style="padding:1.25rem 1.5rem 0.5rem; border-bottom:none; margin-bottom:0;">
+                        <h2 class="section-title">Recent Matches</h2>
+                    </div>
+                    <div class="empty-placeholder">
+                        <div style="font-size:2rem; opacity:0.1; margin-bottom:1rem;"><i class="fas fa-gamepad"></i></div>
+                        <p style="font-size:0.85rem;">No match records found.<br>Join a tournament to start your career!</p>
+                        <div style="display:flex;gap:10px;justify-content:center;margin-top:1.5rem;">
+                            <a href="tournaments.html" class="btn btn-primary btn-sm">Join Tournament</a>
+                            <button class="btn btn-outline btn-sm" onclick="openReportModal()">Report Match</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT SIDEBAR -->
+            <div style="display:flex; flex-direction:column; gap:1.5rem;">
+                
+                <!-- Achievements -->
+                <div class="card">
+                    <div class="section-header" style="padding:1.25rem 1.5rem 0.5rem; border-bottom:none; margin-bottom:0;">
+                        <h2 class="section-title">Achievements</h2>
+                    </div>
+                    <div style="padding:1.5rem; display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem;">
+                        <div style="aspect-ratio:1; background:rgba(255,255,255,0.02); border-radius:50%; border:1px dashed var(--border-light); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:1.2rem;" title="Locked Achievement"><i class="fas fa-lock"></i></div>
+                        <div style="aspect-ratio:1; background:rgba(255,255,255,0.02); border-radius:50%; border:1px dashed var(--border-light); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:1.2rem;" title="Locked Achievement"><i class="fas fa-lock"></i></div>
+                        <div style="aspect-ratio:1; background:rgba(255,255,255,0.02); border-radius:50%; border:1px dashed var(--border-light); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:1.2rem;" title="Locked Achievement"><i class="fas fa-lock"></i></div>
+                    </div>
+                    <div style="text-align:center; padding-bottom:1.25rem; font-size:0.75rem; color:var(--text-dim);">0 of 12 Badges earned</div>
+                </div>
+
+                <!-- Active Tournaments -->
+                <div class="card" style="border:1px solid rgba(0, 210, 255, 0.2); background:rgba(0, 210, 255, 0.02);">
+                    <div style="padding:1.5rem;">
+                        <h3 style="font-family:'Orbitron',sans-serif; font-size:0.85rem; margin-bottom:0.5rem;">My Active Events</h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">You are not currently enrolled in any active tournaments.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="editProfileModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-user-edit" style="color:var(--primary); margin-right:8px;"></i>Edit Profile</div>
+            <button class="modal-close" onclick="closeModal('editProfileModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Manager Name</label>
+            <input type="text" class="form-input" value="Hassan Mahmudu">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-input" value="Dar es Salaam, Tanzania">
+        </div>
+        <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1rem;" onclick="saveProfile()">
+            Update Profile <i class="fas fa-check"></i>
+        </button>
+    </div>
+</div>
+
+<!-- REPORT MATCH MODAL -->
+<div class="modal-overlay" id="reportMatchModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-camera" style="color:var(--primary); margin-right:8px;"></i>Report Match Result</div>
+            <button class="modal-close" onclick="closeModal('reportMatchModal')"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <form id="reportForm" onsubmit="submitMatchReport(event)">
+            <div class="form-group">
+                <label class="form-label">Tournament</label>
+                <select class="form-input" id="reportTournament" onchange="fetchOpponents(this.value)" required>
+                    <option value="">Select Tournament...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Opponent</label>
+                <select class="form-input" id="reportOpponent" required>
+                    <option value="">Select Opponent...</option>
+                </select>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                <div class="form-group">
+                    <label class="form-label">Your Goals</label>
+                    <input type="number" class="form-input" id="reportMyScore" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Opponent Goals</label>
+                    <input type="number" class="form-input" id="reportOpponentScore" min="0" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Screenshot Proof</label>
+                <input type="file" id="reportScreenshot" accept="image/png, image/jpeg, image/webp" class="form-input" style="padding:0.4rem;background:rgba(255,255,255,0.02);" required>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:5px;"><i class="fas fa-info-circle"></i> Upload a clear screenshot showing the final score.</div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1rem;" id="submitReportBtn">
+                <i class="fas fa-paper-plane"></i> Submit for Verification
+            </button>
+        </form>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-bottom">
+        <span>© 2025 Bongo eLeague</span>
+        <span>Made in 🇹🇿 Tanzania</span>
+    </div>
+</footer>
+
+<script src="main.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('league_token');
+        if (!token) {
+            window.location.href = 'index.html'; // Redirect to login if not authenticated
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/users/profile', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                if(res.status === 401 || res.status === 403) {
+                    localStorage.removeItem('league_token');
+                    window.location.href = 'index.html';
+                }
+                throw new Error('Failed to load profile');
+            }
+
+            const data = await res.json();
+            const user = data.user;
+            userTournaments = data.joined_tournaments;
+
+            // Update UI
+            document.querySelector('.profile-name-h1').textContent = user.username;
+            
+            const played = userTournaments.length;
+            document.querySelectorAll('.mini-stat-val')[1].textContent = played;
+            
+            // Active events mapping
+            const eventsContainer = document.querySelector('.card[style*="border:1px solid rgba(0, 210, 255, 0.2)"] div');
+            if(userTournaments && userTournaments.length > 0) {
+                let html = `<h3 style="font-family:'Orbitron',sans-serif; font-size:0.85rem; margin-bottom:0.5rem;">My Active Events (${userTournaments.length})</h3>`;
+                userTournaments.forEach(t => {
+                    html += `
+                    <div style="padding:1.25rem; background:rgba(255,255,255,0.02); border:1px solid var(--border-light); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:700; color:var(--text-light); margin-bottom:5px; font-size:1.05rem;">${t.name}</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Status: <span style="color:var(--primary);">${t.status}</span></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="badge" style="background:rgba(0,210,255,0.1); color:var(--primary);">Registered</div>
+                            <a class="btn btn-outline btn-sm" href="tournament_details.html?id=${t.id}"><i class="fas fa-eye"></i> View</a>
+                        </div>
+                    </div>`;
+                });
+                eventsContainer.innerHTML = html;
+            } else {
+                eventsContainer.innerHTML = `
+                    <h3 style="font-family:'Orbitron',sans-serif; font-size:0.85rem; margin-bottom:0.5rem;">My Active Events</h3>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">You are not currently enrolled in any active tournaments.</p>
+                `;
+            }
+
+        } catch (err) {
+            console.error(err);
+            showToast('Error loading profile data', 'error');
+        }
+    });
+
+    let userTournaments = [];
+
+    function openReportModal() {
+        const select = document.getElementById('reportTournament');
+        select.innerHTML = '<option value="">Select Tournament...</option>';
+        userTournaments.forEach(t => {
+            select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+        });
+        openModal('reportMatchModal');
+    }
+
+    async function fetchOpponents(tournamentId) {
+        const select = document.getElementById('reportOpponent');
+        select.innerHTML = '<option value="">Loading...</option>';
+        if(!tournamentId) { select.innerHTML = '<option value="">Select Opponent...</option>'; return; }
+        
+        try {
+            const token = localStorage.getItem('league_token');
+            const res = await fetch(`/api/tournaments/${tournamentId}/opponents`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            select.innerHTML = '<option value="">Select Opponent...</option>';
+            data.forEach(u => {
+                select.innerHTML += `<option value="${u.id}">${u.username}</option>`;
+            });
+        } catch(e) {
+            select.innerHTML = '<option value="">Error loading opponents</option>';
+        }
+    }
+
+    async function submitMatchReport(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitReportBtn');
+        const token = localStorage.getItem('league_token');
+        
+        const tournamentId = document.getElementById('reportTournament').value;
+        const opponentId = document.getElementById('reportOpponent').value;
+        const myScore = document.getElementById('reportMyScore').value;
+        const oppScore = document.getElementById('reportOpponentScore').value;
+        const fileInput = document.getElementById('reportScreenshot');
+        
+        if(!tournamentId || !opponentId || !myScore || !oppScore || !fileInput.files.length) {
+            showToast('Please fill all fields', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('tournament_id', tournamentId);
+        formData.append('opponent_id', opponentId);
+        formData.append('my_score', myScore);
+        formData.append('opponent_score', oppScore);
+        formData.append('screenshot', fileInput.files[0]);
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/matches/verify', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await res.json();
+            
+            if(res.ok) {
+                closeModal('reportMatchModal');
+                showToast('Match report submitted! Pending admin review.', 'success');
+                document.getElementById('reportForm').reset();
+            } else {
+                showToast(data.error || 'Failed to submit', 'error');
+            }
+        } catch(err) {
+            showToast('Upload error', 'error');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit for Verification';
+            btn.disabled = false;
+        }
+    }
+
+    function saveProfile() {
+        closeModal('editProfileModal');
+        showToast('Profile updated successfully!', 'success');
+    }
+</script>
+</body>
+</html>

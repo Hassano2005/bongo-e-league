@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home — Bongo eLeague</title>
+    <meta name="description" content="Tanzania's #1 eFootball competitive league platform. Join tournaments, win prizes, rise to the top.">
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Announcement ticker */
+        .ticker-wrap {
+            background: rgba(0,210,255,0.06);
+            border-bottom: 1px solid var(--border);
+            border-top: 1px solid var(--border);
+            padding: 0.65rem 2rem;
+        }
+        .ticker-text {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .ticker-text i { color: var(--primary); }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3.5rem 1.5rem;
+            text-align: center;
+            gap: 0.75rem;
+        }
+        .empty-icon {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: rgba(0,210,255,0.08);
+            border: 2px solid rgba(0,210,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .empty-title { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text-light); }
+        .empty-sub { font-size: 0.84rem; color: var(--text-dim); max-width: 260px; line-height: 1.6; }
+
+        /* Prize distribution */
+        .prize-block {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        .prize-block:hover {
+            background: rgba(0, 210, 255, 0.05);
+            transform: translateX(4px);
+            border-radius: var(--radius-sm);
+        }
+        .prize-block:last-child { border-bottom: none; }
+        .prize-rank {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .prize-pct { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 700; margin-left: auto; }
+
+        .home-two-col { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
+        @media (max-width: 960px) { .home-two-col { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="home.html" class="nav-logo">BONGO <span>eLEAGUE</span></a>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="tournaments.html"><i class="fas fa-trophy"></i> Tournaments</a></li>
+        <li><a href="leaderboard.html"><i class="fas fa-chart-bar"></i> Leaderboard</a></li>
+        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+    </ul>
+    <div class="nav-actions">
+        <span class="nav-badge">BETA</span>
+        <div class="nav-avatar" title="My Profile" onclick="window.location.href='profile.html'"><i class="fas fa-user" style="font-size:0.85rem;"></i></div>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<div class="page-wrapper">
+
+    <!-- HERO -->
+    <div class="hero-banner">
+        <div class="hero-content">
+            <div class="hero-tag"><i class="fas fa-bolt"></i> Season 1 — Now Open</div>
+            <h1 class="hero-title">Tanzania's Premier<br><span class="gradient-text">eFootball Arena</span></h1>
+            <p class="hero-sub">Join tournaments, prove your skill, collect prizes via M-Pesa, Airtel Money & Tigo Pesa.</p>
+            <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+                <a href="tournaments.html" class="btn btn-primary btn-lg"><i class="fas fa-trophy"></i> Browse Tournaments</a>
+                <a href="index.html" class="btn btn-ghost"><i class="fas fa-sign-in-alt"></i> Login / Register</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker-wrap">
+        <div class="ticker-text">
+            <i class="fas fa-bullhorn"></i>
+            <span>Welcome to <strong>Bongo eLeague</strong> — Tanzania's first dedicated eFootball tournament platform. Season 1 is now open for registration!</span>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="section" style="padding-bottom:0;">
+        <div class="stats-row">
+            <div class="stat-card"><span class="stat-number">0</span><span class="stat-label">Active Players</span><i class="fas fa-users stat-icon"></i></div>
+            <div class="stat-card"><span class="stat-number">0</span><span class="stat-label">Tournaments</span><i class="fas fa-trophy stat-icon"></i></div>
+            <div class="stat-card"><span class="stat-number">0</span><span class="stat-label">Matches Played</span><i class="fas fa-gamepad stat-icon"></i></div>
+            <div class="stat-card"><span class="stat-number">0</span><span class="stat-label">TZS Distributed</span><i class="fas fa-coins stat-icon"></i></div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="section">
+        <div class="home-two-col">
+
+            <!-- LEFT: TOURNAMENTS -->
+            <div>
+                <div class="section-header">
+                    <h2 class="section-title">Active Tournaments</h2>
+                    <a href="tournaments.html" class="section-link">View All <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card" id="homeTournamentsList">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-trophy"></i></div>
+                        <div class="empty-title">No Tournaments Yet</div>
+                        <div class="empty-sub">No tournaments have been created. Check back soon or ask the admin to open registration.</div>
+                        <a href="tournaments.html" class="btn btn-outline btn-sm" style="margin-top:0.5rem;"><i class="fas fa-arrow-right"></i> Go to Tournaments</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDEBAR -->
+            <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+                <!-- Top Players -->
+                <div>
+                    <div class="section-header">
+                        <h2 class="section-title">Top Players</h2>
+                        <a href="leaderboard.html" class="section-link">Full <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-users"></i></div>
+                            <div class="empty-title">No Players Yet</div>
+                            <div class="empty-sub">Rankings will appear here once players register and compete.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Announcements -->
+                <div>
+                    <div class="section-header">
+                        <h2 class="section-title">Announcements</h2>
+                    </div>
+                    <div class="card">
+                        <div class="empty-state" style="padding:2rem;">
+                            <div class="empty-icon"><i class="fas fa-bullhorn"></i></div>
+                            <div class="empty-title">No Announcements</div>
+                            <div class="empty-sub">Platform announcements and updates will appear here.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prize Distribution -->
+                <div>
+                    <div class="section-header">
+                        <h2 class="section-title">Prize Distribution</h2>
+                    </div>
+                    <div class="card" style="padding:0.25rem 0;">
+                        <div class="prize-block">
+                            <div class="prize-rank">🥇</div>
+                            <div>
+                                <div style="font-weight:600;color:var(--text-light);">Winner</div>
+                                <div style="font-size:0.78rem;color:var(--text-muted);">1st Place</div>
+                            </div>
+                            <div class="prize-pct" style="color:#f5a623;">100%</div>
+                        </div>
+                        <div class="prize-block">
+                            <div class="prize-rank">🥈</div>
+                            <div>
+                                <div style="font-weight:600;color:var(--text-light);">Runner-up</div>
+                                <div style="font-size:0.78rem;color:var(--text-muted);">2nd Place</div>
+                            </div>
+                            <div style="margin-left:auto;text-align:right;">
+                                <div style="font-family:'Orbitron',sans-serif;font-size:0.8rem;font-weight:700;color:var(--primary);">FREE ENTRY</div>
+                                <div style="font-size:0.65rem;color:var(--text-dim);">NEXT EVENT</div>
+                            </div>
+                        </div>
+                        <div style="text-align:center;font-size:0.75rem;color:var(--text-dim);padding:0.75rem;">Winner takes the entire pooled entry fee</div>
+                    </div>
+                </div>
+
+                <!-- How It Works -->
+                <div>
+                    <div class="section-header">
+                        <h2 class="section-title">How It Works</h2>
+                    </div>
+                    <div class="card" style="padding:0.25rem 0;">
+                        <div class="prize-block">
+                            <div class="prize-rank" style="background:rgba(0,210,255,0.1);font-size:1rem;color:var(--primary);">1</div>
+                            <div><div style="font-weight:600;color:var(--text-light);">Register an Account</div><div style="font-size:0.78rem;color:var(--text-muted);">Sign up with your phone number</div></div>
+                        </div>
+                        <div class="prize-block">
+                            <div class="prize-rank" style="background:rgba(0,210,255,0.1);font-size:1rem;color:var(--primary);">2</div>
+                            <div><div style="font-weight:600;color:var(--text-light);">Join a Tournament</div><div style="font-size:0.78rem;color:var(--text-muted);">Pay entry fee via M-Pesa / Airtel / Tigo</div></div>
+                        </div>
+                        <div class="prize-block">
+                            <div class="prize-rank" style="background:rgba(0,210,255,0.1);font-size:1rem;color:var(--primary);">3</div>
+                            <div><div style="font-weight:600;color:var(--text-light);">Play & Submit Results</div><div style="font-size:0.78rem;color:var(--text-muted);">Submit screenshot of final score</div></div>
+                        </div>
+                        <div class="prize-block">
+                            <div class="prize-rank" style="background:rgba(245,166,35,0.12);font-size:1rem;color:#f5a623;">4</div>
+                            <div><div style="font-weight:600;color:var(--text-light);">Win & Get Paid</div><div style="font-size:0.78rem;color:var(--text-muted);">Prize money sent directly to mobile wallet</div></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <a href="home.html" class="nav-logo" style="display:inline-block;margin-bottom:0.5rem;">BONGO <span style="-webkit-text-fill-color:var(--accent);">eLEAGUE</span></a>
+            <p>Tanzania's premier eFootball competitive platform. Join tournaments, win prizes, dominate the league.</p>
+        </div>
+        <div class="footer-links">
+            <h4>Platform</h4>
+            <ul>
+                <li><a href="home.html">Home</a></li>
+                <li><a href="tournaments.html">Tournaments</a></li>
+                <li><a href="leaderboard.html">Leaderboard</a></li>
+                <li><a href="profile.html">My Profile</a></li>
+            </ul>
+        </div>
+        <div class="footer-links">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="#">How to Play</a></li>
+                <li><a href="#">Payment Guide</a></li>
+                <li><a href="#">Rules & Terms</a></li>
+                <li><a href="#">Contact Us</a></li>
+            </ul>
+        </div>
+        <div class="footer-links">
+            <h4>Payments</h4>
+            <ul>
+                <li><a href="#">M-Pesa (+255)</a></li>
+                <li><a href="#">Airtel Money</a></li>
+                <li><a href="#">Tigo Pesa</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2025 Bongo eLeague. All rights reserved.</span>
+        <span>Made in 🇹🇿 Tanzania</span>
+    </div>
+</footer>
+
+<script src="main.js"></script>
+<script>
+async function loadHomeTournaments() {
+    try {
+        const token = localStorage.getItem('league_token');
+        const res = await fetch('/api/tournaments', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const data = await res.json();
+        
+        // Load Main Stats dynamically
+        try {
+            const statRes = await fetch('/api/stats');
+            const statData = await statRes.json();
+            const statNums = document.querySelectorAll('.stat-number');
+            if(statNums.length >= 4) {
+                statNums[0].textContent = statData.activePlayers;
+                statNums[1].textContent = statData.tournaments;
+                statNums[2].textContent = statData.matchesPlayed;
+                statNums[3].textContent = statData.tzsDistributed > 0 ? statData.tzsDistributed.toLocaleString() : 0;
+            }
+        } catch(e) { console.error('Failed to load global stats'); }
+
+        const container = document.getElementById('homeTournamentsList');
+        if (data && data.length > 0) {
+            let html = '<div style="display:flex;flex-direction:column;gap:0;">';
+            data.slice(0,4).forEach(t => {
+                const actionBtn = t.has_joined ? 
+                    `<a href="tournament_details.html?id=${t.id}" class="btn btn-outline btn-sm" style="color:var(--primary); border-color:var(--primary);">View</a>` :
+                    `<a href="tournaments.html" class="btn btn-primary btn-sm">Join</a>`;
+                    
+                html += `
+                <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;transition:background 0.3s;" onmouseover="this.style.background='rgba(0,210,255,0.03)'" onmouseout="this.style.background='transparent'">
+                    <div>
+                        <div style="font-weight:700;color:var(--text-light);font-size:1.05rem;margin-bottom:0.25rem;">${t.name}</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);">
+                            <span style="color:var(--primary);font-weight:700;">${t.status.toUpperCase()}</span> • 
+                            ${t.entry_fee} TZS Entry • 
+                            Prize: <span style="color:var(--accent-gold);font-weight:700;">${t.prize_pool} TZS</span> • 
+                            <span style="color:var(--text-light);"><i class="fas fa-user-friends"></i> ${t.joined_count || 0} Joined</span>
+                        </div>
+                    </div>
+                    <div>
+                        ${actionBtn}
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+    } catch(e) {
+        console.error('Failed to load home tournaments', e);
+    }
+}
+document.addEventListener('DOMContentLoaded', loadHomeTournaments);
+</script>
+</body>
+</html>

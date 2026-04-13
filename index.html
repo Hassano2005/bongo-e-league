@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Bongo eLeague</title>
+    <meta name="description" content="Sign in to Bongo eLeague to join eFootball tournaments and win prizes.">
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 2.5rem;
+            background: rgba(8, 12, 20, 0.95);
+            border: 1px solid rgba(0, 210, 255, 0.18);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), var(--shadow-glow);
+            animation: fadeInUp 0.6s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .auth-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.8), var(--shadow-glow);
+            border-color: rgba(0, 210, 255, 0.35);
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo a {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .auth-sub {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .auth-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 2rem;
+            background: rgba(255,255,255,0.04);
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .auth-tab-btn {
+            background: none;
+            border: none;
+            padding: 10px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 7px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .auth-tab-btn.active {
+            background: rgba(0, 210, 255, 0.12);
+            color: var(--primary);
+            box-shadow: inset 0 0 0 1px rgba(0, 210, 255, 0.2);
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .country-code-box {
+            width: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .form-check input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+        }
+
+        .social-auth {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .social-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.25rem;
+        }
+
+        .social-btns {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .social-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .social-btn:hover {
+            background: rgba(0, 210, 255, 0.08);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-4px) scale(1.08);
+            box-shadow: 0 5px 15px rgba(0,210,255,0.25);
+        }
+
+        /* Floating particles or circles for extra flair */
+        .decor-circle {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="animate-in">
+
+    <!-- Decorative blobs -->
+    <div class="decor-circle" style="width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px;"></div>
+    <div class="decor-circle" style="width: 300px; height: 300px; background: var(--accent); bottom: -50px; right: -50px;"></div>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <a href="home.html">BONGO <span>eLEAGUE</span></a>
+            </div>
+
+            <div class="auth-header">
+                <h2 class="auth-title" id="authTitle">Sign In</h2>
+                <p class="auth-sub" id="authSub">Manage your tournaments and win prizes.</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" onclick="switchTo('login')">Login</button>
+                <button class="auth-tab-btn" onclick="switchTo('register')">Register</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="loginForm" onsubmit="handleAuth(event, 'login')">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <div style="position:relative;">
+                        <i class="fas fa-user" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:0.85rem;"></i>
+                        <input type="text" class="form-input" style="padding-left:2.8rem;" id="loginUsername" placeholder="Your gaming ID" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div style="position:relative;">
+                        <i class="fas fa-lock" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:0.85rem;"></i>
+                        <input type="password" class="form-input" style="padding-left:2.8rem;" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <label class="form-check">
+                        <input type="checkbox"> Remember me
+                    </label>
+                    <a href="#" style="font-size:0.78rem; color:var(--primary); text-decoration:none;">Forgot?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%; justify-content:center; padding:0.9rem;">
+                    Access Dashboard <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- REGISTER FORM (Hidden by default) -->
+            <form id="registerForm" onsubmit="handleAuth(event, 'register')" style="display:none;">
+                <div class="form-group">
+                    <label class="form-label">Gaming Username</label>
+                    <input type="text" class="form-input" id="regUsername" placeholder="e.g. ProMaster_TZ" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number (M-Pesa/Airtel/Tigo)</label>
+                    <div class="phone-input-group">
+                        <div class="country-code-box">+255</div>
+                        <input type="tel" class="form-input" id="regPhone" placeholder="7XX XXX XXX" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Create Password</label>
+                    <input type="password" class="form-input" id="regPassword" placeholder="Minimum 6 characters" required>
+                </div>
+
+                <div style="margin-bottom:1.5rem;">
+                    <label class="form-check">
+                        <input type="checkbox" required> I agree to the <a href="#" style="color:var(--primary);">Terms & Rules</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-accent" id="registerBtn" style="width:100%; justify-content:center; padding:0.9rem;">
+                    Create Account <i class="fas fa-user-plus"></i>
+                </button>
+            </form>
+
+            <div class="social-auth">
+                <div class="social-title">Or continue with</div>
+                <div class="social-btns">
+                    <div class="social-btn"><i class="fab fa-google"></i></div>
+                    <div class="social-btn"><i class="fab fa-facebook-f"></i></div>
+                    <div class="social-btn"><i class="fab fa-apple"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- We use the existing main.js for toast notifications -->
+    <script src="main.js"></script>
+    <script>
+        function switchTo(type) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const authTitle = document.getElementById('authTitle');
+            const authSub = document.getElementById('authSub');
+            const btns = document.querySelectorAll('.auth-tab-btn');
+
+            if (type === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                authTitle.textContent = 'Sign In';
+                authSub.textContent = 'Manage your tournaments and win prizes.';
+                btns[0].classList.add('active');
+                btns[1].classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                authTitle.textContent = 'Join League';
+                authSub.textContent = 'Create an account to start competing.';
+                btns[0].classList.remove('active');
+                btns[1].classList.add('active');
+            }
+        }
+
+        async function handleAuth(event, type) {
+            event.preventDefault();
+            const btnId = type === 'login' ? 'loginBtn' : 'registerBtn';
+            const btn = document.getElementById(btnId);
+            const originalHTML = btn.innerHTML;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+            btn.disabled = true;
+
+            try {
+                let url, bodyData;
+                if (type === 'login') {
+                    url = '/api/auth/login';
+                    bodyData = {
+                        username: document.getElementById('loginUsername').value,
+                        password: document.getElementById('loginPassword').value
+                    };
+                } else {
+                    url = '/api/auth/register';
+                    bodyData = {
+                        username: document.getElementById('regUsername').value,
+                        phone: document.getElementById('regPhone').value,
+                        password: document.getElementById('regPassword').value
+                    };
+                }
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('league_token', data.token);
+                    localStorage.setItem('league_user', JSON.stringify(data.user));
+                    showToast(type === 'login' ? 'Login successful! Welcome back.' : 'Account created! Welcome to Bongo eLeague.', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 1000);
+                } else {
+                    showToast(data.error || 'Authentication failed', 'error');
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Server error. Ensure backend is running.', 'error');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
