@@ -1,19 +1,30 @@
-// 1. IMPORTS
+// server.js - Minimal working version for Render
 const express = require('express');
 const cors = require('cors');
-const { pool, dbReady } = require('./db'); // ✅ Correct path
+const { pool, dbReady } = require('./db'); // ✅ db.js is at root
 
-// 2. INIT EXPRESS APP
-const app = express(); // ✅ This line MUST exist!
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 3. YOUR ROUTES
-app.get('/', (req, res) => res.send('🎮 Bongo eLeague API'));
-app.use('/api/users', require('./routes/users')); // example
-// ... other routes ...
+// ✅ Basic health check route (so the app responds)
+app.get('/', (req, res) => {
+  res.json({ 
+    status: '🎮 Bongo eLeague API is running!',
+    database: 'connected',
+    timestamp: new Date().toISOString()
+  });
+});
 
-// 4. WAIT FOR DB, THEN START SERVER
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true });
+});
+
+// 🔜 TODO: Add routes later when files are ready
+// const usersRouter = require('./routes/users');
+// app.use('/api/users', usersRouter);
+
+// ✅ Wait for DB, then start server
 dbReady.then(() => {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, '0.0.0.0', () => {
