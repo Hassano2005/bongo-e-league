@@ -1,8 +1,7 @@
-// OLD:
-// const pool = require('./backend/db');
+// ... rest of your server code ...
 
-// NEW:
-const { pool, dbReady } = require('./backend/db');
+// ✅ CORRECT: require from root since db.js is at root level
+const { pool, dbReady } = require('./db');
 
 // Wait for DB before starting server
 dbReady.then(() => {
