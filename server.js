@@ -1,4 +1,4 @@
-// server.js - Minimal working version for Render
+// server.js - With Authentication Integrated
 const express = require('express');
 const cors = require('cors');
 const { pool, dbReady } = require('./db'); // ✅ db.js is at root
@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Basic health check route (so the app responds)
+// ✅ Basic health check routes
 app.get('/', (req, res) => {
   res.json({ 
     status: '🎮 Bongo eLeague API is running!',
@@ -20,7 +20,11 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
-// 🔜 TODO: Add routes later when files are ready
+// ✅ NEW: Mount auth routes
+const authRouter = require('./routes/auth'); // ✅ Import auth router
+app.use('/api/auth', authRouter);            // ✅ Routes: /api/auth/register, /api/auth/login
+
+// 🔜 Add more routes later:
 // const usersRouter = require('./routes/users');
 // app.use('/api/users', usersRouter);
 
