@@ -1,769 +1,437 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — Bongo eLeague</title>
-    <meta name="description" content="Admin dashboard to manage Bongo eLeague tournaments, payments, players, and match verification.">
-    <link rel="stylesheet" href="main.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            min-height: calc(100vh - var(--nav-height));
-        }
-        .admin-sidebar {
-            background: rgba(0,0,0,0.35);
-            border-right: 1px solid var(--border-light);
-            padding: 1.5rem 0;
-            position: sticky;
-            top: var(--nav-height);
-            height: calc(100vh - var(--nav-height));
-            overflow-y: auto;
-        }
-        .admin-sidebar-title {
-            padding: 0 1.25rem 0.75rem;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.25rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-        }
-        .sidebar-link:hover { background: rgba(255,255,255,0.04); color: var(--text-light); }
-        .sidebar-link.active { color: var(--primary); background: rgba(0,210,255,0.08); border-left-color: var(--primary); }
-        .sidebar-link i { width: 18px; text-align: center; font-size: 0.9rem; }
-        .sidebar-divider { height: 1px; background: var(--border-light); margin: 1rem 1.25rem; }
-        .admin-main { padding: 2rem; overflow: auto; }
-        .admin-panel { display: none; }
-        .admin-panel.active { display: block; }
-
-        .admin-stat {
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius);
-            padding: 1.25rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: all 0.25s ease;
-        }
-        .admin-stat:hover { border-color: var(--border); box-shadow: var(--shadow-glow); }
-        .admin-stat-icon {
-            width: 48px; height: 48px;
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .admin-stat-num { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 700; }
-        .admin-stat-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
-
-        .empty-state {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 3.5rem 1.5rem; text-align: center; gap: 0.75rem;
-        }
-        .empty-icon {
-            width: 72px; height: 72px; border-radius: 50%;
-            background: rgba(0,210,255,0.07); border: 2px solid rgba(0,210,255,0.12);
-            display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
-            margin-bottom: 0.25rem;
-        }
-        .empty-title { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-light); }
-        .empty-sub { font-size: 0.82rem; color: var(--text-dim); max-width: 260px; line-height: 1.6; }
-
-        .form-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        @media(max-width:600px) { .form-two-col { grid-template-columns: 1fr; } }
-        @media(max-width:768px) { 
-            .admin-layout { display: flex; flex-direction: column; } 
-            .admin-sidebar { 
-                position: relative; top: 0; height: auto; display: flex; overflow-x: auto; 
-                padding: 0.5rem; border-right: none; border-bottom: 1px solid var(--border-light);
-                -ms-overflow-style: none; scrollbar-width: none;
-            } 
-            .admin-sidebar::-webkit-scrollbar { display: none; }
-            .admin-sidebar-title, .sidebar-divider { display: none; }
-            .sidebar-link { white-space: nowrap; border-left: none; border-bottom: 2px solid transparent; border-radius: 6px; padding: 0.5rem 1rem; }
-            .sidebar-link.active { border-left-color: transparent; border-bottom-color: transparent; }
-            .admin-main { padding: 1.25rem 1rem; } 
-        }
-    </style>
-</head>
-<body>
-
-<nav class="navbar">
-    <a href="home.html" class="nav-logo">BONGO <span>eLEAGUE</span></a>
-    <ul class="nav-links" id="navLinks">
-        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-        <li><a href="tournaments.html"><i class="fas fa-trophy"></i> Tournaments</a></li>
-        <li><a href="leaderboard.html"><i class="fas fa-chart-bar"></i> Leaderboard</a></li>
-        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-        <li><a href="admin.html" class="active"><i class="fas fa-shield-alt"></i> Admin</a></li>
-    </ul>
-    <div class="nav-actions">
-        <span class="nav-badge" style="background:var(--accent);">ADMIN</span>
-        <div class="nav-avatar" style="background:linear-gradient(135deg,var(--accent),#c2005f);"><i class="fas fa-shield-alt" style="font-size:0.8rem;"></i></div>
-        <button class="nav-hamburger" id="navHamburger"><span></span><span></span><span></span></button>
-    </div>
-</nav>
-
-<div class="page-wrapper" style="padding-top:var(--nav-height);">
-    <div class="admin-layout">
-
-        <!-- SIDEBAR -->
-        <aside class="admin-sidebar">
-            <div class="admin-sidebar-title">Overview</div>
-            <a href="#" class="sidebar-link active" data-panel="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="#" class="sidebar-link" data-panel="tournaments"><i class="fas fa-trophy"></i> Tournaments</a>
-            <a href="#" class="sidebar-link" data-panel="players"><i class="fas fa-users"></i> Players</a>
-            <div class="sidebar-divider"></div>
-            <div class="admin-sidebar-title">Management</div>
-            <a href="#" class="sidebar-link" data-panel="payments"><i class="fas fa-money-bill-wave"></i> Payments</a>
-            <a href="#" class="sidebar-link" data-panel="verification"><i class="fas fa-camera"></i> Verification</a>
-            <a href="#" class="sidebar-link" data-panel="disputes"><i class="fas fa-gavel"></i> Disputes</a>
-            <div class="sidebar-divider"></div>
-            <div class="admin-sidebar-title">System</div>
-            <a href="#" class="sidebar-link" data-panel="settings"><i class="fas fa-cog"></i> Settings</a>
-            <a href="index.html" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </aside>
-
-        <!-- MAIN -->
-        <main class="admin-main">
-
-            <!-- DASHBOARD PANEL -->
-            <div class="admin-panel active" id="panel-dashboard">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem;">
-                    <div>
-                        <h1 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;">Admin Dashboard</h1>
-                        <p style="color:var(--text-dim);font-size:0.85rem;margin-top:0.25rem;">Season 1 — Platform ready for first tournament</p>
-                    </div>
-                    <button class="btn btn-primary btn-sm" onclick="showPanel('tournaments')"><i class="fas fa-plus"></i> Create Tournament</button>
-                </div>
-
-                <!-- Quick Stats — all zeros -->
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;">
-                    <div class="admin-stat"><div class="admin-stat-icon" style="background:rgba(0,210,255,0.12);color:var(--primary);"><i class="fas fa-users"></i></div><div><div class="admin-stat-num" style="color:var(--primary);">0</div><div class="admin-stat-label">Total Players</div></div></div>
-                    <div class="admin-stat"><div class="admin-stat-icon" style="background:rgba(245,166,35,0.12);color:var(--accent-gold);"><i class="fas fa-trophy"></i></div><div><div class="admin-stat-num" style="color:var(--accent-gold);">0</div><div class="admin-stat-label">Tournaments</div></div></div>
-                    <div class="admin-stat"><div class="admin-stat-icon" style="background:rgba(0,230,118,0.12);color:var(--green);"><i class="fas fa-coins"></i></div><div><div class="admin-stat-num" style="color:var(--green);">0</div><div class="admin-stat-label">TZS Paid Out</div></div></div>
-                    <div class="admin-stat"><div class="admin-stat-icon" style="background:rgba(136,153,170,0.1);color:var(--text-muted);"><i class="fas fa-flag"></i></div><div><div class="admin-stat-num" style="color:var(--text-muted);">0</div><div class="admin-stat-label">Pending Actions</div></div></div>
-                </div>
-
-                <!-- Welcome card -->
-                <div class="card" style="padding:2.5rem;text-align:center;border-style:dashed;border-color:rgba(0,210,255,0.2);">
-                    <div style="width:64px;height:64px;border-radius:50%;background:rgba(0,210,255,0.1);border:2px solid rgba(0,210,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem;">🚀</div>
-                    <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Platform is Ready!</div>
-                    <div style="font-size:0.88rem;color:var(--text-muted);max-width:420px;margin:0 auto 1.5rem;line-height:1.6;">Bongo eLeague is set up and waiting for its first tournament. Create a tournament to get players registered and competing.</div>
-                    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
-                        <button class="btn btn-primary" onclick="showPanel('tournaments')"><i class="fas fa-plus"></i> Create First Tournament</button>
-                        <button class="btn btn-ghost" onclick="showPanel('settings')"><i class="fas fa-cog"></i> Configure Settings</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TOURNAMENTS PANEL -->
-            <div class="admin-panel" id="panel-tournaments">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem;">
-                    <h1 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;"><i class="fas fa-trophy" style="color:var(--primary);margin-right:8px;"></i>Tournaments</h1>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('createTournamentModal')"><i class="fas fa-plus"></i> Create Tournament</button>
-                </div>
-                <div class="card" id="adminTournamentsListCard">
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-trophy"></i></div>
-                        <div class="empty-title">No Tournaments Yet</div>
-                        <div class="empty-sub">Create your first tournament to start accepting player registrations.</div>
-                        <button class="btn btn-primary btn-sm" style="margin-top:0.5rem;" onclick="openModal('createTournamentModal')"><i class="fas fa-plus"></i> Create Tournament</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PLAYERS PANEL -->
-            <div class="admin-panel" id="panel-players">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem;">
-                    <h1 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;"><i class="fas fa-users" style="color:var(--primary);margin-right:8px;"></i>Players</h1>
-                    <input type="text" class="form-input" style="width:220px;padding:0.5rem 1rem;" placeholder="Search player...">
-                </div>
-                <div class="card">
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-users"></i></div>
-                        <div class="empty-title">No Players Registered</div>
-                        <div class="empty-sub">Players will appear here once they register on the platform and join a tournament.</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAYMENTS PANEL -->
-            <div class="admin-panel" id="panel-payments">
-                <h1 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:0.5rem;"><i class="fas fa-money-bill-wave" style="color:var(--primary);margin-right:8px;"></i>Payments</h1>
-                <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.75rem;">Players send entry fees to Vodacom 0796512526. Verify payments manually and add players to tournaments.</p>
-                <div class="card">
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-money-bill-wave"></i></div>
-                        <div class="empty-title">No Payment Records</div>
-                        <div class="empty-sub">Entry fees and prize payouts will appear here once tournaments are active.</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VERIFICATION PANEL -->
-            <div class="admin-panel" id="panel-verification">
-                <h1 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:0.5rem;"><i class="fas fa-camera" style="color:var(--primary);margin-right:8px;"></i>Match Verification</h1>
-                <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.75rem;">Players submit screenshots of their final scores. Review and approve or reject each result.</p>
-                <div class="card">
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-camera"></i></div>
-                        <div class="empty-title">No Screenshots Pending</div>
-                        <div class="empty-sub">When players submit match screenshots, they'll queue here for your review.</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- DISPUTES PANEL -->
-            <div class="admin-panel" id="panel-disputes">
-                <h1 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:1.75rem;"><i class="fas fa-gavel" style="color:var(--primary);margin-right:8px;"></i>Disputes</h1>
-                <div class="card">
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-gavel"></i></div>
-                        <div class="empty-title">No Open Disputes</div>
-                        <div class="empty-sub">Player disputes and appeals will appear here for you to review and resolve.</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SETTINGS PANEL -->
-            <div class="admin-panel" id="panel-settings">
-                <h1 style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:1.75rem;"><i class="fas fa-cog" style="color:var(--primary);margin-right:8px;"></i>Platform Settings</h1>
-                <div class="card" style="padding:1.5rem;max-width:600px;">
-                    <div class="form-group"><label class="form-label">Platform Name</label><input type="text" class="form-input" value="Bongo eLeague"></div>
-                    <div class="form-group"><label class="form-label">Season Name</label><input type="text" class="form-input" placeholder="e.g. Season 1 · 2025"></div>
-                    <div class="form-group"><label class="form-label">Admin Contact (M-Pesa)</label><input type="tel" class="form-input" value="0796512526" placeholder="+255 7XX XXX XXX"></div>
-                    <div class="form-group"><label class="form-label">Platform Cut from Entry Fees (%)</label><input type="number" class="form-input" value="10" min="0" max="30"></div>
-                    <div class="form-group">
-                        <label class="form-label">Screenshot Verification</label>
-                        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem;">
-                            <input type="checkbox" id="verifyToggle" checked style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;">
-                            <label for="verifyToggle" style="font-size:0.9rem;cursor:pointer;">Require screenshot proof for all match results</label>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="showToast('Settings saved!','success')"><i class="fas fa-save"></i> Save Settings</button>
-                </div>
-            </div>
-
-        </main>
-    </div>
-</div>
-
-<!-- CREATE TOURNAMENT MODAL -->
-<div class="modal-overlay" id="createTournamentModal">
-    <div class="modal" style="max-width:600px;">
-        <div class="modal-header">
-            <div class="modal-title"><i class="fas fa-trophy" style="color:var(--primary);margin-right:8px;"></i>Create Knockout Tournament</div>
-            <button class="modal-close" onclick="closeModal('createTournamentModal')"><i class="fas fa-times"></i></button>
-        </div>
-
-        <!-- FORMAT INDICATOR -->
-        <div style="background:rgba(255,0,127,0.07);border:1px solid rgba(255,0,127,0.2);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.75rem;">
-            <i class="fas fa-sitemap" style="color:var(--accent);"></i>
-            <div>
-                <div style="font-size:0.88rem;font-weight:700;color:var(--text-light);">Single Elimination — Knockout</div>
-                <div style="font-size:0.76rem;color:var(--text-muted);">Lose one match and you're out. One champion per tournament.</div>
-            </div>
-        </div>
-
-        <div class="form-group"><label class="form-label">Tournament Name</label><input type="text" class="form-input" placeholder="e.g. Weekend Warriors Cup"></div>
-        <div class="form-two-col">
-            <div class="form-group"><label class="form-label">Entry Fee (TZS)</label><input type="number" class="form-input" id="adminEntryFee" value="3000" oninput="updatePrizePreview()"></div>
-            <div class="form-group"><label class="form-label">Number of Players</label>
-                <select class="form-select" id="adminPlayerCount" onchange="updateRoundsPreview()">
-                    <option value="2">2 Players (1v1)</option>
-                    <option value="8">8 Players</option>
-                    <option value="16" selected>16 Players</option>
-                    <option value="32">32 Players</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Match Format</label>
-            <select class="form-select" id="adminMatchType" onchange="updateRoundsPreview()">
-                <option value="single">Single Match (1 Leg)</option>
-                <option value="home-away">Home & Away (Aggregate Score)</option>
-            </select>
-        </div>
-
-        <!-- ROUNDS PREVIEW -->
-        <div class="form-group">
-            <label class="form-label">Bracket Rounds Preview</label>
-            <div id="adminRoundsPreview" style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;padding:0.75rem 1rem;background:rgba(255,255,255,0.03);border:1px solid var(--border-light);border-radius:var(--radius-sm);"></div>
-        </div>
-
-        <!-- PRIZE PREVIEW -->
-        <div class="form-group">
-            <label class="form-label">Prize Pool Preview</label>
-            <div id="adminPrizePreview" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;">
-                <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius-sm);padding:0.6rem;text-align:center;">
-                    <div style="font-size:1.1rem;">🥇</div>
-                    <div style="font-family:'Orbitron',sans-serif;font-size:0.82rem;font-weight:700;color:#f5a623;" id="prize1st">— TZS</div>
-                    <div style="font-size:0.7rem;color:var(--text-dim);">50% · 1st</div>
-                </div>
-                <div style="background:rgba(176,190,197,0.07);border:1px solid rgba(176,190,197,0.15);border-radius:var(--radius-sm);padding:0.6rem;text-align:center;">
-                    <div style="font-size:1.1rem;">🥈</div>
-                    <div style="font-family:'Orbitron',sans-serif;font-size:0.82rem;font-weight:700;color:#b0bec5;" id="prize2nd">FREE ENTRY</div>
-                    <div style="font-size:0.7rem;color:var(--text-dim);">NEXT EVENT</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-two-col">
-            <div class="form-group"><label class="form-label">Start Date</label><input type="date" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Start Time</label><input type="time" class="form-input" value="18:00"></div>
-        </div>
-        <div class="form-group"><label class="form-label">Game</label>
-            <select class="form-select">
-                <option>eFootball 2025</option>
-                <option>PUBG Mobile</option>
-                <option>Call of Duty Mobile</option>
-                <option>FIFA Mobile</option>
-            </select>
-        </div>
-        <div class="form-group"><label class="form-label">Description / Rules</label><textarea class="form-textarea" placeholder="Describe any special rules or match conditions..."></textarea></div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="createTournament()"><i class="fas fa-plus"></i> Create Knockout Tournament</button>
-    </div>
-</div>
-
 <script src="main.js"></script>
 <script>
-function showPanel(name) {
-    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-    const panel = document.getElementById(`panel-${name}`);
-    if (panel) panel.classList.add('active');
-    const link = document.querySelector(`[data-panel="${name}"]`);
-    if (link) link.classList.add('active');
-}
+    // 🔗 Your live backend API - ADD THIS CONSTANT
+    const API_BASE = 'https://bongo-e-league-31xh.onrender.com';
 
-async function createTournament() {
-    const btn = document.querySelector('#createTournamentModal .btn-primary');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-    btn.disabled = true;
+    function showPanel(name) {
+        document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        const panel = document.getElementById(`panel-${name}`);
+        if (panel) panel.classList.add('active');
+        const link = document.querySelector(`[data-panel="${name}"]`);
+        if (link) link.classList.add('active');
+    }
 
-    try {
-        const token = localStorage.getItem('league_token');
-        if(!token) {
-            showToast('You must be logged in as an admin', 'error'); 
+    async function createTournament() {
+        const btn = document.querySelector('#createTournamentModal .btn-primary');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        btn.disabled = true;
+
+        try {
+            const token = localStorage.getItem('league_token');
+            if(!token) {
+                showToast('You must be logged in as an admin', 'error'); 
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            const nameInput = document.querySelector('#createTournamentModal .form-input[placeholder*="Weekend Warriors"]');
+            const name = nameInput.value.trim() || 'Bongo eLeague Tournament';
+            const fee = document.getElementById('adminEntryFee').value;
+            const prizeDisplay = document.getElementById('prize1st').textContent;
+            const prizeVal = parseInt(prizeDisplay.replace(/,/g, '').replace(' TZS','')) || 0;
+
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/tournaments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name: name, entry_fee: parseInt(fee), prize_pool: prizeVal, status: 'upcoming' })
+            });
+
+            if (res.ok) {
+                closeModal('createTournamentModal');
+                showToast('Knockout tournament created! Players can now register.', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast('Failed to create tournament. Check server.', 'error');
+            }
+        } catch(err) {
+            showToast('Server connection error', 'error');
+        } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
-            return;
         }
-
-        const nameInput = document.querySelector('#createTournamentModal .form-input[placeholder*="Weekend Warriors"]');
-        const name = nameInput.value.trim() || 'Bongo eLeague Tournament';
-        const fee = document.getElementById('adminEntryFee').value;
-        const prizeDisplay = document.getElementById('prize1st').textContent;
-        const prizeVal = parseInt(prizeDisplay.replace(/,/g, '').replace(' TZS','')) || 0;
-
-        const res = await fetch('/api/tournaments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ name: name, entry_fee: parseInt(fee), prize_pool: prizeVal, status: 'upcoming' })
-        });
-
-        if (res.ok) {
-            closeModal('createTournamentModal');
-            showToast('Knockout tournament created! Players can now register.', 'success');
-            setTimeout(() => window.location.reload(), 1500);
-        } else {
-            showToast('Failed to create tournament. Check server.', 'error');
-        }
-    } catch(err) {
-        showToast('Server connection error', 'error');
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
     }
-}
 
-document.querySelectorAll('.sidebar-link[data-panel]').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        showPanel(link.dataset.panel);
+    document.querySelectorAll('.sidebar-link[data-panel]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPanel(link.dataset.panel);
+        });
     });
-});
 
-/* Rounds preview in modal */
-function getRoundNames(count) {
-    const names = [];
-    let c = count;
-    while (c >= 2) {
-        if      (c === 32) names.push({ label: 'R32', emoji: '⚔️' });
-        else if (c === 16) names.push({ label: 'R16', emoji: '⚔️' });
-        else if (c === 8)  names.push({ label: 'QF', emoji: '🔥' });
-        else if (c === 4)  names.push({ label: 'SF', emoji: '⚡' });
-        else if (c === 2)  names.push({ label: 'Final', emoji: '🏆' });
-        c = Math.floor(c / 2);
-    }
-    names.push({ label: 'Champion', emoji: '👑' });
-    return names;
-}
-
-function updateRoundsPreview() {
-    const count = parseInt(document.getElementById('adminPlayerCount').value);
-    const matchType = document.getElementById('adminMatchType').value;
-    const rounds = getRoundNames(count);
-    const container = document.getElementById('adminRoundsPreview');
-    const legText = matchType === 'home-away' ? ' (2 Legs)' : '';
-
-    container.innerHTML = rounds.map(r => `
-        <span class="badge" style="background:rgba(255,255,255,0.05); border:1px solid var(--border-light); font-size:0.7rem; color:var(--text-muted);">
-            ${r.emoji} ${r.label}${legText}
-        </span>
-    `).join('');
-    updatePrizePreview();
-}
-
-function updatePrizePreview() {
-    const fee = parseInt(document.getElementById('adminEntryFee').value) || 0;
-    const count = parseInt(document.getElementById('adminPlayerCount').value);
-    let pool = fee * count;
-    
-    // Custom rule: if fee is 3,000, prize is 35,000 (platform fee 13k)
-    if (fee === 3000 && count === 16) pool = 35000;
-    
-    const fmt = (v) => v > 0 ? v.toLocaleString() + ' TZS' : '— TZS';
-    document.getElementById('prize1st').textContent = fmt(pool);
-    document.getElementById('prize2nd').textContent = 'FREE ENTRY';
-}
-
-/* Init rounds preview on page load */
-updateRoundsPreview();
-
-async function fetchAdminTournaments() {
-    try {
-        const res = await fetch('/api/tournaments');
-        const data = await res.json();
-        const listCard = document.getElementById('adminTournamentsListCard');
-        
-        if (data && data.length > 0) {
-            let html = '<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 40px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Name</div><div>Status</div><div>Entry Fee</div><div>Prize</div><div></div></div>';
-            
-            data.forEach(t => {
-                html += `
-                <div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 40px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
-                    <div style="font-weight:bold;color:var(--text-light);">${t.name} <span style="font-size:0.7rem;color:var(--text-muted);font-weight:normal;margin-left:5px;">(${t.joined_count || 0} joined)</span></div>
-                    <div><span class="badge" style="background:rgba(0,210,255,0.1);color:var(--primary);">${t.status.toUpperCase()}</span></div>
-                    <div>${t.entry_fee}</div>
-                    <div style="color:var(--accent-gold);font-weight:bold;">${t.prize_pool}</div>
-                    <button class="btn btn-ghost btn-sm" style="color:var(--accent);padding:0.35rem;border-color:transparent;" onclick="deleteTournament(${t.id}, this)" title="Delete"><i class="fas fa-trash"></i></button>
-                </div>`;
-            });
-            html += '</div>';
-            listCard.innerHTML = html;
+    /* Rounds preview in modal */
+    function getRoundNames(count) {
+        const names = [];
+        let c = count;
+        while (c >= 2) {
+            if      (c === 32) names.push({ label: 'R32', emoji: '⚔️' });
+            else if (c === 16) names.push({ label: 'R16', emoji: '⚔️' });
+            else if (c === 8)  names.push({ label: 'QF', emoji: '🔥' });
+            else if (c === 4)  names.push({ label: 'SF', emoji: '⚡' });
+            else if (c === 2)  names.push({ label: 'Final', emoji: '🏆' });
+            c = Math.floor(c / 2);
         }
-    } catch(err) {
-        console.error('Failed to load admin tournaments', err);
+        names.push({ label: 'Champion', emoji: '👑' });
+        return names;
     }
-}
 
-async function fetchAdminStats() {
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch('/api/admin/stats', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            const stats = await res.json();
-            const statNums = document.querySelectorAll('.admin-stat-num');
-            if(statNums.length >= 4) {
-                statNums[0].textContent = stats.totalPlayers.toLocaleString();
-                statNums[1].textContent = stats.totalTournaments.toLocaleString();
-                statNums[2].textContent = stats.paidOut.toLocaleString();
-                statNums[3].textContent = stats.pendingActions.toLocaleString();
+    function updateRoundsPreview() {
+        const count = parseInt(document.getElementById('adminPlayerCount').value);
+        const matchType = document.getElementById('adminMatchType').value;
+        const rounds = getRoundNames(count);
+        const container = document.getElementById('adminRoundsPreview');
+        const legText = matchType === 'home-away' ? ' (2 Legs)' : '';
+
+        container.innerHTML = rounds.map(r => `
+            <span class="badge" style="background:rgba(255,255,255,0.05); border:1px solid var(--border-light); font-size:0.7rem; color:var(--text-muted);">
+                ${r.emoji} ${r.label}${legText}
+            </span>
+        `).join('');
+        updatePrizePreview();
+    }
+
+    function updatePrizePreview() {
+        const fee = parseInt(document.getElementById('adminEntryFee').value) || 0;
+        const count = parseInt(document.getElementById('adminPlayerCount').value);
+        let pool = fee * count;
+        
+        // Custom rule: if fee is 3,000, prize is 35,000 (platform fee 13k)
+        if (fee === 3000 && count === 16) pool = 35000;
+        
+        const fmt = (v) => v > 0 ? v.toLocaleString() + ' TZS' : '— TZS';
+        document.getElementById('prize1st').textContent = fmt(pool);
+        document.getElementById('prize2nd').textContent = 'FREE ENTRY';
+    }
+
+    /* Init rounds preview on page load */
+    updateRoundsPreview();
+
+    async function fetchAdminTournaments() {
+        try {
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/tournaments`);
+            const data = await res.json();
+            const listCard = document.getElementById('adminTournamentsListCard');
+            
+            if (data && data.length > 0) {
+                let html = '<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 40px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Name</div><div>Status</div><div>Entry Fee</div><div>Prize</div><div></div></div>';
+                
+                data.forEach(t => {
+                    html += `
+                    <div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 40px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                        <div style="font-weight:bold;color:var(--text-light);">${t.name} <span style="font-size:0.7rem;color:var(--text-muted);font-weight:normal;margin-left:5px;">(${t.joined_count || 0} joined)</span></div>
+                        <div><span class="badge" style="background:rgba(0,210,255,0.1);color:var(--primary);">${t.status.toUpperCase()}</span></div>
+                        <div>${t.entry_fee}</div>
+                        <div style="color:var(--accent-gold);font-weight:bold;">${t.prize_pool}</div>
+                        <button class="btn btn-ghost btn-sm" style="color:var(--accent);padding:0.35rem;border-color:transparent;" onclick="deleteTournament(${t.id}, this)" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                });
+                html += '</div>';
+                listCard.innerHTML = html;
             }
+        } catch(err) {
+            console.error('Failed to load admin tournaments', err);
         }
-    } catch(err) {
-        console.error('Failed to load admin stats', err);
     }
-}
 
-async function deleteTournament(id, btn) {
-    if(!confirm('Are you sure you want to delete this tournament? All registered participants will be removed.')) return;
-    
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-    
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch(`/api/tournaments/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast('Tournament deleted securely', 'success');
-            fetchAdminTournaments();
-            fetchAdminStats();
-        } else {
-            showToast('Failed to delete', 'error');
+    async function fetchAdminStats() {
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const stats = await res.json();
+                const statNums = document.querySelectorAll('.admin-stat-num');
+                if(statNums.length >= 4) {
+                    statNums[0].textContent = stats.totalPlayers.toLocaleString();
+                    statNums[1].textContent = stats.totalTournaments.toLocaleString();
+                    statNums[2].textContent = stats.paidOut.toLocaleString();
+                    statNums[3].textContent = stats.pendingActions.toLocaleString();
+                }
+            }
+        } catch(err) {
+            console.error('Failed to load admin stats', err);
+        }
+    }
+
+    async function deleteTournament(id, btn) {
+        if(!confirm('Are you sure you want to delete this tournament? All registered participants will be removed.')) return;
+        
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/tournaments/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('Tournament deleted securely', 'success');
+                fetchAdminTournaments();
+                fetchAdminStats();
+            } else {
+                showToast('Failed to delete', 'error');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        } catch(err) {
+            showToast('Server error', 'error');
             btn.innerHTML = originalHtml;
             btn.disabled = false;
         }
-    } catch(err) {
-        showToast('Server error', 'error');
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
     }
-}
 
-async function fetchAdminPlayers() {
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch('/api/admin/players', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        const playersCard = document.querySelector('#panel-players .card');
-        
-        if (data && data.length > 0) {
-            let html = '<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Player</div><div>Phone</div><div>Tourneys Joined</div><div></div></div>';
-            data.forEach(p => {
-                html += `
-                <div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
-                    <div style="font-weight:bold;color:var(--text-light);">${p.username}</div>
-                    <div style="color:var(--text-muted);">${p.phone}</div>
-                    <div style="color:var(--primary);font-weight:bold;">${p.tournaments_joined}</div>
-                    <button class="btn btn-ghost btn-sm" style="color:var(--accent);padding:0.35rem;border-color:transparent;" onclick="deletePlayer(${p.id}, this)" title="Remove Player"><i class="fas fa-trash"></i></button>
-                </div>`;
+    async function fetchAdminPlayers() {
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/players`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            html += '</div>';
-            playersCard.innerHTML = html;
+            const data = await res.json();
+            const playersCard = document.querySelector('#panel-players .card');
+            
+            if (data && data.length > 0) {
+                let html = '<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Player</div><div>Phone</div><div>Tourneys Joined</div><div></div></div>';
+                data.forEach(p => {
+                    html += `
+                    <div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                        <div style="font-weight:bold;color:var(--text-light);">${p.username}</div>
+                        <div style="color:var(--text-muted);">${p.phone}</div>
+                        <div style="color:var(--primary);font-weight:bold;">${p.tournaments_joined}</div>
+                        <button class="btn btn-ghost btn-sm" style="color:var(--accent);padding:0.35rem;border-color:transparent;" onclick="deletePlayer(${p.id}, this)" title="Remove Player"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                });
+                html += '</div>';
+                playersCard.innerHTML = html;
+            }
+        } catch(err) {
+            console.error('Failed to load players', err);
         }
-    } catch(err) {
-        console.error('Failed to load players', err);
     }
-}
 
-async function deletePlayer(id, btn) {
-    if(!confirm('Are you sure you want to permanently remove this user? All their matches and data will be erased.')) return;
-    
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-    
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch(`/api/admin/players/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast('User removed successfully', 'success');
-            fetchAdminPlayers();
-            fetchAdminStats();
-        } else {
-            showToast('Failed to remove user', 'error');
+    async function deletePlayer(id, btn) {
+        if(!confirm('Are you sure you want to permanently remove this user? All their matches and data will be erased.')) return;
+        
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/players/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('User removed successfully', 'success');
+                fetchAdminPlayers();
+                fetchAdminStats();
+            } else {
+                showToast('Failed to remove user', 'error');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        } catch(err) {
+            showToast('Server error', 'error');
             btn.innerHTML = originalHtml;
             btn.disabled = false;
         }
-    } catch(err) {
-        showToast('Server error', 'error');
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
     }
-}
 
-async function fetchAdminPayments() {
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch('/api/admin/payments', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        const paymentsCard = document.querySelector('#panel-payments .card');
-        
-        if (data && data.length > 0) {
-            let html = '<div style="min-width: 700px;"><div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 120px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Player</div><div>Tournament</div><div>Phone</div><div>Amount</div><div>Actions</div></div>';
-            
-            data.forEach(p => {
-                html += `
-                <div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
-                    <div style="font-weight:bold;color:var(--text-light);">${p.username}</div>
-                    <div style="color:var(--text-muted);">${p.tournament_name}</div>
-                    <div style="color:var(--text-muted);">${p.phone_number}</div>
-                    <div style="color:var(--accent-gold);font-weight:bold;">${p.amount}</div>
-                    <div style="display:flex;gap:5px;">
-                        <button class="btn btn-primary btn-sm" onclick="approvePayment(${p.id}, this)" title="Approve"><i class="fas fa-check"></i></button>
-                        <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectPayment(${p.id}, this)" title="Reject"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>`;
+    async function fetchAdminPayments() {
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/payments`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            html += '</div>';
-            paymentsCard.innerHTML = html;
-        } else {
-            paymentsCard.innerHTML = `<div class="empty-state">
-                <div class="empty-icon"><i class="fas fa-money-bill-wave"></i></div>
-                <div class="empty-title">No Pending Payments</div>
-                <div class="empty-sub">All entry fees have been processed.</div>
-            </div>`;
-        }
-    } catch(err) {
-        console.error('Failed to load admin payments', err);
-    }
-}
-
-async function approvePayment(id, btn) {
-    if(!confirm('Approve this payment and add player to tournament?')) return;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch(`/api/admin/payments/${id}/approve`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast('Payment approved', 'success');
-            fetchAdminPayments();
-            fetchAdminStats();
-        } else {
-            showToast('Failed to approve', 'error');
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            btn.disabled = false;
-        }
-    } catch(err) {
-        showToast('Server error', 'error');
-    }
-}
-
-async function rejectPayment(id, btn) {
-    if(!confirm('Reject this payment?')) return;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch(`/api/admin/payments/${id}/reject`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast('Payment rejected', 'success');
-            fetchAdminPayments();
-        } else {
-            showToast('Failed to reject', 'error');
-            btn.innerHTML = '<i class="fas fa-times"></i>';
-            btn.disabled = false;
-        }
-    } catch(err) {
-        showToast('Server error', 'error');
-    }
-}
-
-async function fetchAdminVerifications() {
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch('/api/admin/verifications', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        const verifCard = document.querySelector('#panel-verification .card');
-        
-        if (data && data.length > 0) {
-            let html = '<div style="min-width: 650px;"><div style="display:grid;grid-template-columns:1fr 150px 100px 120px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Match</div><div>Score</div><div>Screenshot</div><div>Actions</div></div>';
+            const data = await res.json();
+            const paymentsCard = document.querySelector('#panel-payments .card');
             
-            data.forEach(v => {
-                html += `
-                <div style="display:grid;grid-template-columns:1fr 150px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
-                    <div>
-                        <div style="font-weight:bold;color:var(--text-light);">${v.tournament_name}</div>
-                        <div style="color:var(--text-muted);font-size:0.75rem;">${v.submitter_name} <span style="margin: 0 4px; color: var(--text-dim);">vs</span> ${v.opponent_name}</div>
-                    </div>
-                    <div style="color:var(--text-light);font-weight:bold;font-size:1.1rem;font-family:\\'Orbitron\\',sans-serif;">${v.my_score} - ${v.opponent_score}</div>
-                    <div><a href="${v.screenshot_url}" target="_blank" class="btn btn-outline btn-sm" style="padding:0.2rem 0.5rem;"><i class="fas fa-image"></i> View</a></div>
-                    <div style="display:flex;gap:5px;">
-                        <button class="btn btn-primary btn-sm" onclick="approveVerification(${v.id}, this)" title="Approve"><i class="fas fa-check"></i></button>
-                        <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectVerification(${v.id}, this)" title="Reject"><i class="fas fa-times"></i></button>
-                    </div>
+            if (data && data.length > 0) {
+                let html = '<div style="min-width: 700px;"><div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 120px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Player</div><div>Tournament</div><div>Phone</div><div>Amount</div><div>Actions</div></div>';
+                
+                data.forEach(p => {
+                    html += `
+                    <div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                        <div style="font-weight:bold;color:var(--text-light);">${p.username}</div>
+                        <div style="color:var(--text-muted);">${p.tournament_name}</div>
+                        <div style="color:var(--text-muted);">${p.phone_number}</div>
+                        <div style="color:var(--accent-gold);font-weight:bold;">${p.amount}</div>
+                        <div style="display:flex;gap:5px;">
+                            <button class="btn btn-primary btn-sm" onclick="approvePayment(${p.id}, this)" title="Approve"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectPayment(${p.id}, this)" title="Reject"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                paymentsCard.innerHTML = html;
+            } else {
+                paymentsCard.innerHTML = `<div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="empty-title">No Pending Payments</div>
+                    <div class="empty-sub">All entry fees have been processed.</div>
                 </div>`;
+            }
+        } catch(err) {
+            console.error('Failed to load admin payments', err);
+        }
+    }
+
+    async function approvePayment(id, btn) {
+        if(!confirm('Approve this payment and add player to tournament?')) return;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/payments/${id}/approve`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            html += '</div>';
-            verifCard.innerHTML = html;
-        } else {
-            verifCard.innerHTML = `<div class="empty-state">
-                <div class="empty-icon"><i class="fas fa-camera"></i></div>
-                <div class="empty-title">No Pending Verifications</div>
-                <div class="empty-sub">All match results have been reviewed.</div>
-            </div>`;
+            if (res.ok) {
+                showToast('Payment approved', 'success');
+                fetchAdminPayments();
+                fetchAdminStats();
+            } else {
+                showToast('Failed to approve', 'error');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.disabled = false;
+            }
+        } catch(err) {
+            showToast('Server error', 'error');
         }
-    } catch(err) {
-        console.error('Failed to load admin verifications', err);
     }
-}
 
-async function approveVerification(id, btn) {
-    if(!confirm('Approve this match result?')) return;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch(`/api/admin/verifications/${id}/approve`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast('Match result approved', 'success');
-            fetchAdminVerifications();
-        } else {
-            showToast('Failed to approve', 'error');
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            btn.disabled = false;
+    async function rejectPayment(id, btn) {
+        if(!confirm('Reject this payment?')) return;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/payments/${id}/reject`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('Payment rejected', 'success');
+                fetchAdminPayments();
+            } else {
+                showToast('Failed to reject', 'error');
+                btn.innerHTML = '<i class="fas fa-times"></i>';
+                btn.disabled = false;
+            }
+        } catch(err) {
+            showToast('Server error', 'error');
         }
-    } catch(err) {
-        showToast('Server error', 'error');
     }
-}
 
-async function rejectVerification(id, btn) {
-    if(!confirm('Reject this match result?')) return;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch(`/api/admin/verifications/${id}/reject`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast('Match result rejected', 'success');
-            fetchAdminVerifications();
-        } else {
-            showToast('Failed to reject', 'error');
-            btn.innerHTML = '<i class="fas fa-times"></i>';
-            btn.disabled = false;
+    async function fetchAdminVerifications() {
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/verifications`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            const verifCard = document.querySelector('#panel-verification .card');
+            
+            if (data && data.length > 0) {
+                let html = '<div style="min-width: 650px;"><div style="display:grid;grid-template-columns:1fr 150px 100px 120px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Match</div><div>Score</div><div>Screenshot</div><div>Actions</div></div>';
+                
+                data.forEach(v => {
+                    html += `
+                    <div style="display:grid;grid-template-columns:1fr 150px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                        <div>
+                            <div style="font-weight:bold;color:var(--text-light);">${v.tournament_name}</div>
+                            <div style="color:var(--text-muted);font-size:0.75rem;">${v.submitter_name} <span style="margin: 0 4px; color: var(--text-dim);">vs</span> ${v.opponent_name}</div>
+                        </div>
+                        <div style="color:var(--text-light);font-weight:bold;font-size:1.1rem;font-family:\\'Orbitron\\',sans-serif;">${v.my_score} - ${v.opponent_score}</div>
+                        <div><a href="${v.screenshot_url}" target="_blank" class="btn btn-outline btn-sm" style="padding:0.2rem 0.5rem;"><i class="fas fa-image"></i> View</a></div>
+                        <div style="display:flex;gap:5px;">
+                            <button class="btn btn-primary btn-sm" onclick="approveVerification(${v.id}, this)" title="Approve"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectVerification(${v.id}, this)" title="Reject"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                verifCard.innerHTML = html;
+            } else {
+                verifCard.innerHTML = `<div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-camera"></i></div>
+                    <div class="empty-title">No Pending Verifications</div>
+                    <div class="empty-sub">All match results have been reviewed.</div>
+                </div>`;
+            }
+        } catch(err) {
+            console.error('Failed to load admin verifications', err);
         }
-    } catch(err) {
-        showToast('Server error', 'error');
     }
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-    fetchAdminTournaments();
-    fetchAdminStats();
-    fetchAdminPlayers();
-    fetchAdminPayments();
-    fetchAdminVerifications();
-});
+    async function approveVerification(id, btn) {
+        if(!confirm('Approve this match result?')) return;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/verifications/${id}/approve`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('Match result approved', 'success');
+                fetchAdminVerifications();
+            } else {
+                showToast('Failed to approve', 'error');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.disabled = false;
+            }
+        } catch(err) {
+            showToast('Server error', 'error');
+        }
+    }
+
+    async function rejectVerification(id, btn) {
+        if(!confirm('Reject this match result?')) return;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/admin/verifications/${id}/reject`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('Match result rejected', 'success');
+                fetchAdminVerifications();
+            } else {
+                showToast('Failed to reject', 'error');
+                btn.innerHTML = '<i class="fas fa-times"></i>';
+                btn.disabled = false;
+            }
+        } catch(err) {
+            showToast('Server error', 'error');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchAdminTournaments();
+        fetchAdminStats();
+        fetchAdminPlayers();
+        fetchAdminPayments();
+        fetchAdminVerifications();
+    });
 </script>
-</body>
-</html>
