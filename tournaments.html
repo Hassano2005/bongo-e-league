@@ -1,609 +1,220 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tournaments — Bongo eLeague</title>
-    <meta name="description" content="Browse and join eFootball knockout tournaments on Bongo eLeague.">
-    <link rel="stylesheet" href="main.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* ── FILTER BAR ── */
-        .filter-bar {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            align-items: center;
-            padding: 1.1rem 2rem;
-            background: rgba(0,0,0,0.25);
-            border-bottom: 1px solid var(--border-light);
-            position: sticky;
-            top: var(--nav-height);
-            z-index: 100;
-            backdrop-filter: blur(12px);
-        }
-        .filter-chip {
-            padding: 0.4rem 1rem;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-light);
-            border-radius: 20px;
-            color: var(--text-muted);
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .filter-chip:hover { border-color: var(--primary); color: var(--primary); }
-        .filter-chip.active { background: rgba(0,210,255,0.12); border-color: var(--primary); color: var(--primary); }
-
-        /* ── FORMAT BADGE ── */
-        .format-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: rgba(255,0,127,0.12);
-            color: var(--accent);
-            border: 1px solid rgba(255,0,127,0.25);
-        }
-
-        /* ── EMPTY STATE ── */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem 1.5rem;
-            text-align: center;
-            gap: 0.75rem;
-        }
-        .empty-icon {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: rgba(0,210,255,0.07);
-            border: 2px solid rgba(0,210,255,0.12);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .empty-title { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text-light); }
-        .empty-sub { font-size: 0.84rem; color: var(--text-dim); max-width: 300px; line-height: 1.6; }
-
-        /* ── KNOCKOUT EXPLAINER ── */
-        .ko-explainer {
-            display: flex;
-            gap: 0;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            padding: 2rem;
-        }
-        .ko-stage {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.4rem;
-            min-width: 90px;
-            padding: 1rem 0.75rem;
-        }
-        .ko-stage-icon {
-            width: 48px; height: 48px;
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-            border: 1px solid var(--border-light);
-            background: var(--bg-card);
-            transition: border-color 0.2s;
-        }
-        .ko-stage-label { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; text-align: center; text-transform: uppercase; letter-spacing: 0.8px; }
-        .ko-stage-count { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); }
-        .ko-arrow { color: var(--text-dim); font-size: 1rem; padding: 0 0.25rem; }
-
-        /* ── BRACKET ── */
-        .bracket-section { overflow-x: auto; padding-bottom: 1rem; }
-        .bracket {
-            display: flex;
-            gap: 0;
-            min-width: 800px;
-            padding: 1.5rem;
-        }
-        .bracket-round {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            padding: 0 1.5rem;
-            flex: 1;
-            min-width: 180px;
-            position: relative;
-        }
-        /* Connector lines between rounds */
-        .bracket-round:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            right: 0; top: 0; bottom: 0;
-            width: 1px;
-            background: linear-gradient(to bottom, transparent, rgba(0,210,255,0.15) 30%, rgba(0,210,255,0.15) 70%, transparent);
-        }
-        .bracket-round-title {
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 1.25rem;
-            padding: 0.4rem 0.75rem;
-            background: rgba(0,210,255,0.06);
-            border: 1px solid rgba(0,210,255,0.1);
-            border-radius: 20px;
-            width: fit-content;
-            align-self: center;
-        }
-        .bracket-match {
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            margin: 0.5rem 0;
-            transition: border-color 0.25s, box-shadow 0.25s;
-        }
-        .bracket-match:hover { border-color: var(--border); box-shadow: var(--shadow-glow); }
-        .bracket-slot {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.65rem 0.85rem;
-            font-size: 0.82rem;
-            font-weight: 500;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            color: var(--text-dim);
-        }
-        .bracket-slot:last-child { border-bottom: none; }
-        .bracket-slot.tbd {
-            color: var(--text-dim);
-            font-style: italic;
-        }
-        .slot-num {
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: var(--text-dim);
-            width: 16px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .slot-dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            border: 1px dashed rgba(255,255,255,0.2);
-            flex-shrink: 0;
-        }
-
-        /* 16-player bracket builds 4 rounds: R16, QF, SF, Final */
-        /* 8-player: QF, SF, Final */
-
-        /* ── PAYMENT MODAL ── */
-        .payment-option {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.9rem 1.1rem;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 0.5rem;
-        }
-        .payment-option:hover, .payment-option.selected { border-color: var(--primary); background: rgba(0,210,255,0.07); }
-        .payment-icon { width: 44px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; flex-shrink: 0; }
-        .payment-icon.mpesa { background: #00a651; color: white; }
-        .payment-icon.airtel { background: #e60000; color: white; }
-        .payment-icon.tigo { background: #003da5; color: white; }
-        .payment-info { flex: 1; }
-        .payment-name { font-size: 0.88rem; font-weight: 600; }
-        .payment-sub { font-size: 0.76rem; color: var(--text-muted); }
-        .payment-radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border-light); transition: all 0.2s; flex-shrink: 0; }
-        .payment-option.selected .payment-radio { border-color: var(--primary); background: var(--primary); }
-
-        /* ── INFO BOX ── */
-        .info-box {
-            background: rgba(0,210,255,0.06);
-            border: 1px solid rgba(0,210,255,0.15);
-            border-radius: var(--radius-sm);
-            padding: 1rem 1.25rem;
-            display: flex;
-            gap: 0.75rem;
-            font-size: 0.84rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-        .info-box i { color: var(--primary); margin-top: 2px; flex-shrink: 0; }
-    </style>
-</head>
-<body>
-
-<nav class="navbar">
-    <a href="home.html" class="nav-logo">BONGO <span>eLEAGUE</span></a>
-    <ul class="nav-links" id="navLinks">
-        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-        <li><a href="tournaments.html" class="active"><i class="fas fa-trophy"></i> Tournaments</a></li>
-        <li><a href="leaderboard.html"><i class="fas fa-chart-bar"></i> Leaderboard</a></li>
-        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-        <li><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
-    </ul>
-    <div class="nav-actions">
-        <span class="nav-badge">BETA</span>
-        <div class="nav-avatar" onclick="window.location.href='profile.html'"><i class="fas fa-user" style="font-size:0.85rem;"></i></div>
-        <button class="nav-hamburger" id="navHamburger"><span></span><span></span><span></span></button>
-    </div>
-</nav>
-
-<div class="page-wrapper">
-
-    <!-- HERO -->
-    <div class="hero-banner" style="height:240px;">
-        <div class="hero-content">
-            <div class="hero-tag"><i class="fas fa-trophy"></i> Tournaments</div>
-            <h1 class="hero-title"><span class="gradient-text">Knockout Format</span></h1>
-            <p class="hero-sub">Single elimination — win or go home. Every match counts. One champion per tournament.</p>
-        </div>
-    </div>
-
-    <!-- FILTER BAR -->
-    <div class="filter-bar">
-        <span class="filter-chip active" data-filter="all">All</span>
-        <span class="filter-chip" data-filter="live">🔴 Live</span>
-        <span class="filter-chip" data-filter="upcoming">🟡 Upcoming</span>
-        <span class="filter-chip" data-filter="closed">⚫ Closed</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;">
-            <div class="format-badge"><i class="fas fa-sitemap"></i> Single Elimination</div>
-        </div>
-    </div>
-
-    <!-- TOURNAMENTS LIST -->
-    <div class="section">
-
-        <!-- HOW KNOCKOUT WORKS -->
-        <div class="section-header">
-            <h2 class="section-title">How Knockout Works</h2>
-        </div>
-        <div class="card" style="margin-bottom:2rem;">
-            <div class="ko-explainer" id="koExplainer">
-                <!-- Rendered by JS based on player count -->
-            </div>
-            <div style="padding:0 1.5rem 1.25rem;">
-                <div class="info-box">
-                    <i class="fas fa-info-circle"></i>
-                    <span><strong>Match Format:</strong> Tournaments can be **Single Match** (1 Leg) or **Home & Away** (2 Legs). For Home & Away, the aggregate score determines who advances. Winner takes 100% of the prize pool!</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ACTIVE TOURNAMENTS -->
-        <div class="section-header">
-            <h2 class="section-title">Active Tournaments</h2>
-        </div>
-        <div class="card" id="tournamentListCard">
-            <div class="empty-state">
-                <div class="empty-icon"><i class="fas fa-trophy"></i></div>
-                <div class="empty-title">No Tournaments Available</div>
-                <div class="empty-sub">No knockout tournaments have been created yet. The admin will open registrations soon — check back later!</div>
-                <div style="display:flex;gap:0.75rem;margin-top:0.75rem;flex-wrap:wrap;justify-content:center;">
-                    <a href="home.html" class="btn btn-outline btn-sm"><i class="fas fa-home"></i> Back to Home</a>
-                    <a href="admin.html" class="btn btn-ghost btn-sm"><i class="fas fa-plus"></i> Create Tournament (Admin)</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- KNOCKOUT BRACKET SECTION -->
-    <div class="section" style="padding-top:0;">
-        <div class="section-header">
-            <h2 class="section-title">Live Bracket</h2>
-            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-                <div class="format-badge"><i class="fas fa-sitemap"></i> Knockout</div>
-                <select class="form-select" id="bracketSizeSelect" style="padding:0.4rem 0.75rem;font-size:0.82rem;width:auto;" onchange="renderBracket(parseInt(this.value))">
-                    <option value="2">2 Players (1v1)</option>
-                    <option value="8">8 Players</option>
-                    <option value="16" selected>16 Players</option>
-                    <option value="32">32 Players</option>
-                </select>
-            </div>
-        </div>
-        <div class="card" style="overflow:hidden;">
-            <div style="padding:1rem 1.5rem 0;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:0.75rem;">
-                <div style="font-size:0.78rem;color:var(--text-dim);">
-                    <i class="fas fa-info-circle" style="margin-right:4px;"></i>
-                    The bracket below shows the structure. Slots are filled as players register.
-                </div>
-            </div>
-            <div class="bracket-section">
-                <div class="bracket" id="bracketView"></div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<!-- JOIN MODAL -->
-<div class="modal-overlay" id="joinModal">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title"><i class="fas fa-sign-in-alt" style="color:var(--primary);margin-right:8px;"></i>Join Tournament</div>
-            <button class="modal-close" onclick="closeModal('joinModal')"><i class="fas fa-times"></i></button>
-        </div>
-        <div style="background:rgba(0,210,255,0.06);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.25rem;">
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.25rem;">Tournament</div>
-            <div id="joinTournamentName" style="font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;">PRO KNOCKOUT SERIES</div>
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem;flex-wrap:wrap;">
-                <span id="joinFee" style="font-size:1.2rem;font-weight:700;color:var(--accent-gold);">3,000 TZS</span>
-                <div class="format-badge"><i class="fas fa-sitemap"></i> Knockout</div>
-                <div class="format-badge" style="background:rgba(0,210,255,0.1); color:var(--primary); border-color:rgba(0,210,255,0.2);"><i class="fas fa-exchange-alt"></i> 2 Legs (H&A)</div>
-            </div>
-            <div style="font-size:0.78rem;color:var(--text-accent);margin-top:0.5rem;font-weight:600;">PRIZE: 35,000 TZS</div>
-        </div>
-        <div class="info-box" style="margin-bottom:1rem;">
-            <i class="fas fa-info-circle"></i>
-            <span><strong>Payment Process:</strong> Send the entry fee to the number shown below. After payment, enter your phone number and click "Confirm & Pay". The admin will verify your payment and add you to the tournament.</span>
-        </div>
-        <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;">Pay Entry Fee Via</div>
-        <div class="payment-option selected" onclick="selectPayment(this)">
-            <div class="payment-icon mpesa">VOD</div>
-            <div class="payment-info"><div class="payment-name">Vodacom</div><div class="payment-sub">0796512526 - Hassan Mahmudu</div></div>
-            <div class="payment-radio"></div>
-        </div>
-        <div class="payment-option" onclick="selectPayment(this)">
-            <div class="payment-icon airtel">AIR</div>
-            <div class="payment-info"><div class="payment-name">Airtel Money</div><div class="payment-sub">0796512526 - Hassan Mahmudu</div></div>
-            <div class="payment-radio"></div>
-        </div>
-        <div class="payment-option" onclick="selectPayment(this)">
-            <div class="payment-icon tigo">TPZ</div>
-            <div class="payment-info"><div class="payment-name">Tigo Pesa</div><div class="payment-sub">0796512526 - Hassan Mahmudu</div></div>
-            <div class="payment-radio"></div>
-        </div>
-        <div class="form-group" style="margin-top:1rem;">
-            <label class="form-label">Your Phone Number</label>
-            <input type="tel" class="form-input" placeholder="+255 7XX XXX XXX" id="joinPhone">
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;" id="joinPayBtn" onclick="confirmJoin()">
-            <i class="fas fa-paper-plane"></i> Confirm Payment Sent
-        </button>
-        <div style="text-align:center;font-size:0.73rem;color:var(--text-dim);margin-top:0.75rem;">
-            <i class="fas fa-user-shield" style="color:var(--primary);"></i> Admin will verify payment and add you to the tournament
-        </div>
-    </div>
-</div>
-
-<footer class="footer">
-    <div class="footer-bottom" style="max-width:1200px;margin:0 auto;border-top:none;padding-top:0;">
-        <span>© 2025 Bongo eLeague</span>
-        <span>Made in 🇹🇿 Tanzania</span>
-    </div>
-</footer>
-
 <script src="main.js"></script>
 <script>
+    // 🔗 Your live backend API - ADD THIS CONSTANT
+    const API_BASE = 'https://bongo-e-league-31xh.onrender.com';
 
-/* ────────────────────────────────────────────────
-   KNOCKOUT EXPLAINER — shows round stages
-──────────────────────────────────────────────── */
-function getRounds(playerCount) {
-    const stages = [];
-    if (playerCount >= 32) stages.push({ label: 'Round of 32', icon: '⚔️', players: 32 });
-    if (playerCount >= 16) stages.push({ label: 'Round of 16', icon: '⚔️', players: 16 });
-    if (playerCount >= 8)  stages.push({ label: 'Quarter-Final', icon: '🔥', players: 8 });
-    if (playerCount >= 4)  stages.push({ label: 'Semi-Final', icon: '⚡', players: 4 });
-    stages.push({ label: 'Final', icon: '🏆', players: 2 });
-    stages.push({ label: 'Champion', icon: '👑', players: 1 });
-    return stages;
-}
-
-function renderKoExplainer(playerCount = 16) {
-    const stages = getRounds(playerCount);
-    const container = document.getElementById('koExplainer');
-    container.innerHTML = stages.map((s, i) => `
-        ${ i > 0 ? '<span class="ko-arrow"><i class="fas fa-chevron-right"></i></span>' : '' }
-        <div class="ko-stage">
-            <div class="ko-stage-icon" style="${i === stages.length - 1 ? 'border-color:var(--accent-gold);background:rgba(245,166,35,0.08);' : ''}">${s.icon}</div>
-            <div class="ko-stage-label">${s.label}</div>
-            <div class="ko-stage-count">${s.players} player${s.players !== 1 ? 's' : ''}</div>
-        </div>
-    `).join('');
-}
-
-/* ────────────────────────────────────────────────
-   BRACKET RENDERER — empty TBD slots
-──────────────────────────────────────────────── */
-function renderBracket(playerCount = 16) {
-    const container = document.getElementById('bracketView');
-
-    // Build rounds based on players
-    const roundDefs = [];
-    let count = playerCount;
-    while (count >= 2) {
-        roundDefs.push(count);
-        count = Math.floor(count / 2);
+    /* ────────────────────────────────────────────────
+       KNOCKOUT EXPLAINER — shows round stages
+    ──────────────────────────────────────────────── */
+    function getRounds(playerCount) {
+        const stages = [];
+        if (playerCount >= 32) stages.push({ label: 'Round of 32', icon: '⚔️', players: 32 });
+        if (playerCount >= 16) stages.push({ label: 'Round of 16', icon: '⚔️', players: 16 });
+        if (playerCount >= 8)  stages.push({ label: 'Quarter-Final', icon: '🔥', players: 8 });
+        if (playerCount >= 4)  stages.push({ label: 'Semi-Final', icon: '⚡', players: 4 });
+        stages.push({ label: 'Final', icon: '🏆', players: 2 });
+        stages.push({ label: 'Champion', icon: '👑', players: 1 });
+        return stages;
     }
 
-    const roundNames = (total) => {
-        const n = [];
-        let c = total;
-        while (c >= 2) {
-            if      (c === 32) n.push('Round of 32');
-            else if (c === 16) n.push('Round of 16');
-            else if (c === 8)  n.push('Quarter-Finals');
-            else if (c === 4)  n.push('Semi-Finals');
-            else if (c === 2)  n.push('Final');
-            c = Math.floor(c / 2);
-        }
-        return n;
-    };
-
-    const names = roundNames(playerCount);
-    let seed = 1;
-
-    container.innerHTML = roundDefs.map((matchCount, ri) => {
-        const matchesInRound = matchCount / 2;
-        const roundMatches = Array.from({ length: matchesInRound }, (_, mi) => {
-            const isFirstRound = ri === 0;
-            const p1 = isFirstRound ? seed++ : null;
-            const p2 = isFirstRound ? seed++ : null;
-            return { p1, p2 };
-        });
-
-        return `
-            <div class="bracket-round" style="justify-content:space-evenly;">
-                <div class="bracket-round-title">${names[ri]}</div>
-                ${roundMatches.map(m => `
-                    <div class="bracket-match">
-                        <div class="bracket-slot tbd">
-                            <span class="slot-num">${m.p1 ?? '?'}</span>
-                            <div class="slot-dot"></div>
-                            <span style="flex:1;">TBD</span>
-                        </div>
-                        <div class="bracket-slot tbd">
-                            <span class="slot-num">${m.p2 ?? '?'}</span>
-                            <div class="slot-dot"></div>
-                            <span style="flex:1;">TBD</span>
-                        </div>
-                    </div>
-                `).join('')}
+    function renderKoExplainer(playerCount = 16) {
+        const stages = getRounds(playerCount);
+        const container = document.getElementById('koExplainer');
+        container.innerHTML = stages.map((s, i) => `
+            ${ i > 0 ? '<span class="ko-arrow"><i class="fas fa-chevron-right"></i></span>' : '' }
+            <div class="ko-stage">
+                <div class="ko-stage-icon" style="${i === stages.length - 1 ? 'border-color:var(--accent-gold);background:rgba(245,166,35,0.08);' : ''}">${s.icon}</div>
+                <div class="ko-stage-label">${s.label}</div>
+                <div class="ko-stage-count">${s.players} player${s.players !== 1 ? 's' : ''}</div>
             </div>
-        `;
-    }).join('');
+        `).join('');
+    }
 
-    renderKoExplainer(playerCount);
-}
+    /* ────────────────────────────────────────────────
+       BRACKET RENDERER — empty TBD slots
+    ──────────────────────────────────────────────── */
+    function renderBracket(playerCount = 16) {
+        const container = document.getElementById('bracketView');
 
-document.querySelectorAll('.filter-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-    });
-});
+        // Build rounds based on players
+        const roundDefs = [];
+        let count = playerCount;
+        while (count >= 2) {
+            roundDefs.push(count);
+            count = Math.floor(count / 2);
+        }
 
-function selectPayment(el) {
-    document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
-}
+        const roundNames = (total) => {
+            const n = [];
+            let c = total;
+            while (c >= 2) {
+                if      (c === 32) n.push('Round of 32');
+                else if (c === 16) n.push('Round of 16');
+                else if (c === 8)  n.push('Quarter-Finals');
+                else if (c === 4)  n.push('Semi-Finals');
+                else if (c === 2)  n.push('Final');
+                c = Math.floor(c / 2);
+            }
+            return n;
+        };
 
-/* ── API INTEGRATION ── */
-let selectedTournamentId = null;
+        const names = roundNames(playerCount);
+        let seed = 1;
 
-async function fetchTournaments() {
-    try {
-        const token = localStorage.getItem('league_token');
-        const res = await fetch('/api/tournaments', {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        const data = await res.json();
-        const listCard = document.getElementById('tournamentListCard');
-        
-        if (data.length === 0) return; // Keep empty state
-        
-        let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem; padding:1.5rem;">';
-        data.forEach(t => {
-            const actionBtn = t.has_joined ? 
-                `<button class="btn btn-outline btn-sm" style="width:100%; justify-content:center; color:var(--primary); border-color:var(--primary);" onclick="window.location.href='tournament_details.html?id=${t.id}'">
-                    <i class="fas fa-eye"></i> View Tournament
-                </button>` :
-                `<button class="btn btn-primary btn-sm" style="width:100%; justify-content:center;" onclick="openJoinModal(${t.id}, '${t.name}', ${t.entry_fee}, ${t.prize_pool})">
-                    <i class="fas fa-plus"></i> Join Tournament
-                </button>`;
-                
-            html += `
-                <div class="card" style="border:1px solid rgba(0, 210, 255, 0.2); background:rgba(0, 210, 255, 0.02); padding:1.5rem;">
-                    <div class="format-badge" style="margin-bottom:10px;"><i class="fas fa-sitemap"></i> ${t.status.toUpperCase()}</div>
-                    <h3 style="font-family:'Orbitron',sans-serif; font-size:1.2rem; color:var(--text-light); margin-bottom:5px;">${t.name}</h3>
-                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px; line-height: 1.6;">
-                        Entry: <strong style="color:var(--text-light);">${t.entry_fee} TZS</strong> | Prize: <strong style="color:var(--accent-gold);">${t.prize_pool} TZS</strong><br>
-                        <span style="font-size:0.75rem; color:var(--primary);"><i class="fas fa-user-friends"></i> ${t.joined_count || 0} Player${(t.joined_count||0) !== 1 ? 's' : ''} Joined</span>
-                    </p>
-                    ${actionBtn}
+        container.innerHTML = roundDefs.map((matchCount, ri) => {
+            const matchesInRound = matchCount / 2;
+            const roundMatches = Array.from({ length: matchesInRound }, (_, mi) => {
+                const isFirstRound = ri === 0;
+                const p1 = isFirstRound ? seed++ : null;
+                const p2 = isFirstRound ? seed++ : null;
+                return { p1, p2 };
+            });
+
+            return `
+                <div class="bracket-round" style="justify-content:space-evenly;">
+                    <div class="bracket-round-title">${names[ri]}</div>
+                    ${roundMatches.map(m => `
+                        <div class="bracket-match">
+                            <div class="bracket-slot tbd">
+                                <span class="slot-num">${m.p1 ?? '?'}</span>
+                                <div class="slot-dot"></div>
+                                <span style="flex:1;">TBD</span>
+                            </div>
+                            <div class="bracket-slot tbd">
+                                <span class="slot-num">${m.p2 ?? '?'}</span>
+                                <div class="slot-dot"></div>
+                                <span style="flex:1;">TBD</span>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
             `;
-        });
-        html += '</div>';
-        listCard.innerHTML = html;
+        }).join('');
 
-    } catch (err) {
-        console.error(err);
-        showToast('Failed to load tournaments', 'error');
+        renderKoExplainer(playerCount);
     }
-}
 
-function openJoinModal(id, name, fee, prize) {
-    const token = localStorage.getItem('league_token');
-    if (!token) {
-        showToast('Please login first to join tournaments.', 'error');
-        setTimeout(() => window.location.href = 'index.html', 1500);
-        return;
-    }
-    
-    selectedTournamentId = id;
-    document.getElementById('joinTournamentName').textContent = name;
-    document.getElementById('joinFee').textContent = fee + ' TZS';
-    openModal('joinModal');
-}
-
-async function confirmJoin() {
-    const phone = document.getElementById('joinPhone').value.trim();
-    if (!phone) { showToast('Please enter your phone number', 'error'); return; }
-    const btn = document.getElementById('joinPayBtn');
-    
-    const token = localStorage.getItem('league_token');
-    
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    btn.disabled = true;
-
-    try {
-        const amountStr = document.getElementById('joinFee').textContent.replace(/,/g, '').replace(' TZS', '');
-        const amount = parseInt(amountStr) || 0;
-
-        const res = await fetch('/api/payments/submit', {
-            method: 'POST',
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                tournament_id: selectedTournamentId,
-                phone_number: phone,
-                amount: amount
-            })
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
         });
-        
-        const data = await res.json();
-        
-        if (res.ok) {
-            closeModal('joinModal');
-            showToast('Payment submitted for verification. Admin will review!', 'success', 3000);
-            setTimeout(() => window.location.href = 'profile.html', 1500);
-        } else {
-            showToast(data.error || 'Failed to submit payment', 'error');
+    });
+
+    function selectPayment(el) {
+        document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    /* ── API INTEGRATION ── */
+    let selectedTournamentId = null;
+
+    async function fetchTournaments() {
+        try {
+            const token = localStorage.getItem('league_token');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/tournaments`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            const data = await res.json();
+            const listCard = document.getElementById('tournamentListCard');
+            
+            if (data.length === 0) return; // Keep empty state
+            
+            let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem; padding:1.5rem;">';
+            data.forEach(t => {
+                const actionBtn = t.has_joined ? 
+                    `<button class="btn btn-outline btn-sm" style="width:100%; justify-content:center; color:var(--primary); border-color:var(--primary);" onclick="window.location.href='tournament_details.html?id=${t.id}'">
+                        <i class="fas fa-eye"></i> View Tournament
+                    </button>` :
+                    `<button class="btn btn-primary btn-sm" style="width:100%; justify-content:center;" onclick="openJoinModal(${t.id}, '${t.name}', ${t.entry_fee}, ${t.prize_pool})">
+                        <i class="fas fa-plus"></i> Join Tournament
+                    </button>`;
+                    
+                html += `
+                    <div class="card" style="border:1px solid rgba(0, 210, 255, 0.2); background:rgba(0, 210, 255, 0.02); padding:1.5rem;">
+                        <div class="format-badge" style="margin-bottom:10px;"><i class="fas fa-sitemap"></i> ${t.status.toUpperCase()}</div>
+                        <h3 style="font-family:'Orbitron',sans-serif; font-size:1.2rem; color:var(--text-light); margin-bottom:5px;">${t.name}</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px; line-height: 1.6;">
+                            Entry: <strong style="color:var(--text-light);">${t.entry_fee} TZS</strong> | Prize: <strong style="color:var(--accent-gold);">${t.prize_pool} TZS</strong><br>
+                            <span style="font-size:0.75rem; color:var(--primary);"><i class="fas fa-user-friends"></i> ${t.joined_count || 0} Player${(t.joined_count||0) !== 1 ? 's' : ''} Joined</span>
+                        </p>
+                        ${actionBtn}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            listCard.innerHTML = html;
+
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to load tournaments', 'error');
         }
-    } catch(err) {
-        console.error(err);
-        showToast('Server error', 'error');
-    } finally {
-        btn.innerHTML = '<i class="fas fa-lock"></i> Confirm & Pay';
-        btn.disabled = false;
     }
-}
 
-/* ── Init ── */
-document.addEventListener('DOMContentLoaded', () => {
-    renderBracket(16);
-    fetchTournaments();
-});
+    function openJoinModal(id, name, fee, prize) {
+        const token = localStorage.getItem('league_token');
+        if (!token) {
+            showToast('Please login first to join tournaments.', 'error');
+            setTimeout(() => window.location.href = 'index.html', 1500);
+            return;
+        }
+        
+        selectedTournamentId = id;
+        document.getElementById('joinTournamentName').textContent = name;
+        document.getElementById('joinFee').textContent = fee + ' TZS';
+        openModal('joinModal');
+    }
+
+    async function confirmJoin() {
+        const phone = document.getElementById('joinPhone').value.trim();
+        if (!phone) { showToast('Please enter your phone number', 'error'); return; }
+        const btn = document.getElementById('joinPayBtn');
+        
+        const token = localStorage.getItem('league_token');
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        btn.disabled = true;
+
+        try {
+            const amountStr = document.getElementById('joinFee').textContent.replace(/,/g, '').replace(' TZS', '');
+            const amount = parseInt(amountStr) || 0;
+
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/payments/submit`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tournament_id: selectedTournamentId,
+                    phone_number: phone,
+                    amount: amount
+                })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                closeModal('joinModal');
+                showToast('Payment submitted for verification. Admin will review!', 'success', 3000);
+                setTimeout(() => window.location.href = 'profile.html', 1500);
+            } else {
+                showToast(data.error || 'Failed to submit payment', 'error');
+            }
+        } catch(err) {
+            console.error(err);
+            showToast('Server error', 'error');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-lock"></i> Confirm & Pay';
+            btn.disabled = false;
+        }
+    }
+
+    /* ── Init ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderBracket(16);
+        fetchTournaments();
+    });
 </script>
-</body>
-</html>
