@@ -286,107 +286,94 @@
             </div>
         </div>
     </div>
-
     <!-- We use the existing main.js for toast notifications -->
-    <script src="main.js"></script>
-    <script>
-        <script>
-    // 🔗 Your live backend API - CHANGE THIS IF NEEDED
+<script src="main.js"></script>
+<script>
+    // 🔗 Your live backend API
     const API_BASE = 'https://bongo-e-league-31xh.onrender.com';
-    
-    // ... rest of your code ...
-    
-    async function handleAuth(event, type) {
-        // ...
-        let url;
+
+    function switchTo(type) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const authTitle = document.getElementById('authTitle');
+        const authSub = document.getElementById('authSub');
+        const btns = document.querySelectorAll('.auth-tab-btn');
+
         if (type === 'login') {
-            url = `${API_BASE}/api/auth/login`;  // ✅ Full URL
-            // ...
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            authTitle.textContent = 'Sign In';
+            authSub.textContent = 'Manage your tournaments and win prizes.';
+            btns[0].classList.add('active');
+            btns[1].classList.remove('active');
         } else {
-            url = `${API_BASE}/api/auth/register`;  // ✅ Full URL
-            // ...
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            authTitle.textContent = 'Join League';
+            authSub.textContent = 'Create an account to start competing.';
+            btns[0].classList.remove('active');
+            btns[1].classList.add('active');
         }
-        // ...
     }
-</script>
-        function switchTo(type) {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const authTitle = document.getElementById('authTitle');
-            const authSub = document.getElementById('authSub');
-            const btns = document.querySelectorAll('.auth-tab-btn');
 
+    async function handleAuth(event, type) {
+        event.preventDefault();
+        const btnId = type === 'login' ? 'loginBtn' : 'registerBtn';
+        const btn = document.getElementById(btnId);
+        const originalHTML = btn.innerHTML;
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+        btn.disabled = true;
+
+        try {
+            let url, bodyData;
             if (type === 'login') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-                authTitle.textContent = 'Sign In';
-                authSub.textContent = 'Manage your tournaments and win prizes.';
-                btns[0].classList.add('active');
-                btns[1].classList.remove('active');
+                // ✅ FULL URL - fixes "Ensure backend is running" error
+                url = `${API_BASE}/api/auth/login`;
+                bodyData = {
+                    username: document.getElementById('loginUsername').value,
+                    password: document.getElementById('loginPassword').value
+                };
             } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                authTitle.textContent = 'Join League';
-                authSub.textContent = 'Create an account to start competing.';
-                btns[0].classList.remove('active');
-                btns[1].classList.add('active');
+                // ✅ FULL URL
+                url = `${API_BASE}/api/auth/register`;
+                bodyData = {
+                    username: document.getElementById('regUsername').value,
+                    phone: document.getElementById('regPhone').value,
+                    password: document.getElementById('regPassword').value
+                };
             }
-        }
 
-        async function handleAuth(event, type) {
-            event.preventDefault();
-            const btnId = type === 'login' ? 'loginBtn' : 'registerBtn';
-            const btn = document.getElementById(btnId);
-            const originalHTML = btn.innerHTML;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyData)
+            });
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
-            btn.disabled = true;
+            const data = await res.json();
 
-            try {
-                let url, bodyData;
-                if (type === 'login') {
-                    url = '/api/auth/login';
-                    bodyData = {
-                        username: document.getElementById('loginUsername').value,
-                        password: document.getElementById('loginPassword').value
-                    };
-                } else {
-                    url = '/api/auth/register';
-                    bodyData = {
-                        username: document.getElementById('regUsername').value,
-                        phone: document.getElementById('regPhone').value,
-                        password: document.getElementById('regPassword').value
-                    };
-                }
-
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bodyData)
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    localStorage.setItem('league_token', data.token);
-                    localStorage.setItem('league_user', JSON.stringify(data.user));
-                    showToast(type === 'login' ? 'Login successful! Welcome back.' : 'Account created! Welcome to Bongo eLeague.', 'success');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'home.html';
-                    }, 1000);
-                } else {
-                    showToast(data.error || 'Authentication failed', 'error');
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
-                }
-            } catch (err) {
-                console.error(err);
-                showToast('Server error. Ensure backend is running.', 'error');
+            if (res.ok) {
+                localStorage.setItem('league_token', data.token);
+                localStorage.setItem('league_user', JSON.stringify(data.user));
+                showToast(type === 'login' ? 'Login successful! Welcome back.' : 'Account created! Welcome to Bongo eLeague.', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1000);
+            } else {
+                showToast(data.error || 'Authentication failed', 'error');
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
             }
+        } catch (err) {
+            console.error('Auth error:', err);
+            showToast('Connection error. Please try again.', 'error');
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
         }
-    </script>
+    }
+</script>
+
+    
 </body>
 </html>
