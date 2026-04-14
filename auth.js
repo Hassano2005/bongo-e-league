@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// ✅ FIX: Destructure pool + correct path (both files at root)
-const { pool } = require('./db');
+// ✅ FIX: Destructure pool + correct path (both files are in the same folder)
+const { pool } = require('./db'); 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_bongo_key_change_me_later';
 
