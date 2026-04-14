@@ -1,8 +1,13 @@
 // server.js - With Authentication Integrated
 const express = require('express');
 const cors = require('cors');
-// In server.js
-const authRouter = require('./auth'); // ✅ No /routes/ prefix
+
+// ✅ Import DB (with dbReady)
+const { pool, dbReady } = require('./db');
+
+// ✅ Import auth router (auth.js is at ROOT, not in routes/)
+const authRouter = require('./auth');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -20,9 +25,8 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
-// ✅ NEW: Mount auth routes
-const authRouter = require('./routes/auth'); // ✅ Import auth router
-app.use('/api/auth', authRouter);            // ✅ Routes: /api/auth/register, /api/auth/login
+// ✅ Mount auth routes
+app.use('/api/auth', authRouter);
 
 // 🔜 Add more routes later:
 // const usersRouter = require('./routes/users');
