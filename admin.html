@@ -97,16 +97,12 @@
         const fee = parseInt(document.getElementById('adminEntryFee').value) || 0;
         const count = parseInt(document.getElementById('adminPlayerCount').value);
         let pool = fee * count;
-        
-        // Custom rule: if fee is 3,000, prize is 35,000 (platform fee 13k)
         if (fee === 3000 && count === 16) pool = 35000;
-        
         const fmt = (v) => v > 0 ? v.toLocaleString() + ' TZS' : '— TZS';
         document.getElementById('prize1st').textContent = fmt(pool);
         document.getElementById('prize2nd').textContent = 'FREE ENTRY';
     }
 
-    /* Init rounds preview on page load */
     updateRoundsPreview();
 
     async function fetchAdminTournaments() {
@@ -115,13 +111,10 @@
             const res = await fetch(`${API_BASE}/api/tournaments`);
             const data = await res.json();
             const listCard = document.getElementById('adminTournamentsListCard');
-            
             if (data && data.length > 0) {
                 let html = '<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 40px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Name</div><div>Status</div><div>Entry Fee</div><div>Prize</div><div></div></div>';
-                
                 data.forEach(t => {
-                    html += `
-                    <div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 40px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                    html += `<div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 40px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
                         <div style="font-weight:bold;color:var(--text-light);">${t.name} <span style="font-size:0.7rem;color:var(--text-muted);font-weight:normal;margin-left:5px;">(${t.joined_count || 0} joined)</span></div>
                         <div><span class="badge" style="background:rgba(0,210,255,0.1);color:var(--primary);">${t.status.toUpperCase()}</span></div>
                         <div>${t.entry_fee}</div>
@@ -132,9 +125,7 @@
                 html += '</div>';
                 listCard.innerHTML = html;
             }
-        } catch(err) {
-            console.error('Failed to load admin tournaments', err);
-        }
+        } catch(err) { console.error('Failed to load admin tournaments', err); }
     }
 
     async function fetchAdminStats() {
@@ -148,24 +139,20 @@
                 const stats = await res.json();
                 const statNums = document.querySelectorAll('.admin-stat-num');
                 if(statNums.length >= 4) {
-                    statNums[0].textContent = stats.totalPlayers.toLocaleString();
-                    statNums[1].textContent = stats.totalTournaments.toLocaleString();
-                    statNums[2].textContent = stats.paidOut.toLocaleString();
-                    statNums[3].textContent = stats.pendingActions.toLocaleString();
+                    statNums[0].textContent = stats.totalPlayers?.toLocaleString() || '0';
+                    statNums[1].textContent = stats.totalTournaments?.toLocaleString() || '0';
+                    statNums[2].textContent = stats.paidOut?.toLocaleString() || '0';
+                    statNums[3].textContent = stats.pendingActions?.toLocaleString() || '0';
                 }
             }
-        } catch(err) {
-            console.error('Failed to load admin stats', err);
-        }
+        } catch(err) { console.error('Failed to load admin stats', err); }
     }
 
     async function deleteTournament(id, btn) {
-        if(!confirm('Are you sure you want to delete this tournament? All registered participants will be removed.')) return;
-        
+        if(!confirm('Are you sure you want to delete this tournament?')) return;
         const originalHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btn.disabled = true;
-        
         try {
             const token = localStorage.getItem('league_token');
             // ✅ Use full URL:
@@ -174,19 +161,11 @@
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
-                showToast('Tournament deleted securely', 'success');
-                fetchAdminTournaments();
-                fetchAdminStats();
-            } else {
-                showToast('Failed to delete', 'error');
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            }
-        } catch(err) {
-            showToast('Server error', 'error');
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
-        }
+                showToast('Tournament deleted', 'success');
+                fetchAdminTournaments(); fetchAdminStats();
+            } else { showToast('Failed to delete', 'error'); }
+        } catch(err) { showToast('Server error', 'error'); }
+        finally { btn.innerHTML = originalHtml; btn.disabled = false; }
     }
 
     async function fetchAdminPlayers() {
@@ -198,33 +177,27 @@
             });
             const data = await res.json();
             const playersCard = document.querySelector('#panel-players .card');
-            
             if (data && data.length > 0) {
-                let html = '<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Player</div><div>Phone</div><div>Tourneys Joined</div><div></div></div>';
+                let html = '<div style="min-width: 600px;"><div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Player</div><div>Phone</div><div>Tourneys</div><div></div></div>';
                 data.forEach(p => {
-                    html += `
-                    <div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                    html += `<div style="display:grid;grid-template-columns:1fr 150px 100px 50px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
                         <div style="font-weight:bold;color:var(--text-light);">${p.username}</div>
                         <div style="color:var(--text-muted);">${p.phone}</div>
                         <div style="color:var(--primary);font-weight:bold;">${p.tournaments_joined}</div>
-                        <button class="btn btn-ghost btn-sm" style="color:var(--accent);padding:0.35rem;border-color:transparent;" onclick="deletePlayer(${p.id}, this)" title="Remove Player"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-ghost btn-sm" style="color:var(--accent);" onclick="deletePlayer(${p.id}, this)"><i class="fas fa-trash"></i></button>
                     </div>`;
                 });
                 html += '</div>';
                 playersCard.innerHTML = html;
             }
-        } catch(err) {
-            console.error('Failed to load players', err);
-        }
+        } catch(err) { console.error('Failed to load players', err); }
     }
 
     async function deletePlayer(id, btn) {
-        if(!confirm('Are you sure you want to permanently remove this user? All their matches and data will be erased.')) return;
-        
+        if(!confirm('Permanently remove this user?')) return;
         const originalHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btn.disabled = true;
-        
         try {
             const token = localStorage.getItem('league_token');
             // ✅ Use full URL:
@@ -233,19 +206,11 @@
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
-                showToast('User removed successfully', 'success');
-                fetchAdminPlayers();
-                fetchAdminStats();
-            } else {
-                showToast('Failed to remove user', 'error');
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            }
-        } catch(err) {
-            showToast('Server error', 'error');
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
-        }
+                showToast('User removed', 'success');
+                fetchAdminPlayers(); fetchAdminStats();
+            } else { showToast('Failed to remove', 'error'); }
+        } catch(err) { showToast('Server error', 'error'); }
+        finally { btn.innerHTML = originalHtml; btn.disabled = false; }
     }
 
     async function fetchAdminPayments() {
@@ -257,39 +222,28 @@
             });
             const data = await res.json();
             const paymentsCard = document.querySelector('#panel-payments .card');
-            
             if (data && data.length > 0) {
                 let html = '<div style="min-width: 700px;"><div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 120px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Player</div><div>Tournament</div><div>Phone</div><div>Amount</div><div>Actions</div></div>';
-                
                 data.forEach(p => {
-                    html += `
-                    <div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                    html += `<div style="display:grid;grid-template-columns:1fr 1fr 100px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
                         <div style="font-weight:bold;color:var(--text-light);">${p.username}</div>
                         <div style="color:var(--text-muted);">${p.tournament_name}</div>
                         <div style="color:var(--text-muted);">${p.phone_number}</div>
                         <div style="color:var(--accent-gold);font-weight:bold;">${p.amount}</div>
                         <div style="display:flex;gap:5px;">
-                            <button class="btn btn-primary btn-sm" onclick="approvePayment(${p.id}, this)" title="Approve"><i class="fas fa-check"></i></button>
-                            <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectPayment(${p.id}, this)" title="Reject"><i class="fas fa-times"></i></button>
+                            <button class="btn btn-primary btn-sm" onclick="approvePayment(${p.id}, this)"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectPayment(${p.id}, this)"><i class="fas fa-times"></i></button>
                         </div>
                     </div>`;
                 });
                 html += '</div>';
                 paymentsCard.innerHTML = html;
-            } else {
-                paymentsCard.innerHTML = `<div class="empty-state">
-                    <div class="empty-icon"><i class="fas fa-money-bill-wave"></i></div>
-                    <div class="empty-title">No Pending Payments</div>
-                    <div class="empty-sub">All entry fees have been processed.</div>
-                </div>`;
             }
-        } catch(err) {
-            console.error('Failed to load admin payments', err);
-        }
+        } catch(err) { console.error('Failed to load payments', err); }
     }
 
     async function approvePayment(id, btn) {
-        if(!confirm('Approve this payment and add player to tournament?')) return;
+        if(!confirm('Approve this payment?')) return;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btn.disabled = true;
         try {
@@ -299,18 +253,10 @@
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.ok) {
-                showToast('Payment approved', 'success');
-                fetchAdminPayments();
-                fetchAdminStats();
-            } else {
-                showToast('Failed to approve', 'error');
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                btn.disabled = false;
-            }
-        } catch(err) {
-            showToast('Server error', 'error');
-        }
+            if (res.ok) { showToast('Payment approved', 'success'); fetchAdminPayments(); fetchAdminStats(); }
+            else { showToast('Failed to approve', 'error'); }
+        } catch(err) { showToast('Server error', 'error'); }
+        finally { btn.innerHTML = '<i class="fas fa-check"></i>'; btn.disabled = false; }
     }
 
     async function rejectPayment(id, btn) {
@@ -324,17 +270,10 @@
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.ok) {
-                showToast('Payment rejected', 'success');
-                fetchAdminPayments();
-            } else {
-                showToast('Failed to reject', 'error');
-                btn.innerHTML = '<i class="fas fa-times"></i>';
-                btn.disabled = false;
-            }
-        } catch(err) {
-            showToast('Server error', 'error');
-        }
+            if (res.ok) { showToast('Payment rejected', 'success'); fetchAdminPayments(); }
+            else { showToast('Failed to reject', 'error'); }
+        } catch(err) { showToast('Server error', 'error'); }
+        finally { btn.innerHTML = '<i class="fas fa-times"></i>'; btn.disabled = false; }
     }
 
     async function fetchAdminVerifications() {
@@ -346,37 +285,23 @@
             });
             const data = await res.json();
             const verifCard = document.querySelector('#panel-verification .card');
-            
             if (data && data.length > 0) {
                 let html = '<div style="min-width: 650px;"><div style="display:grid;grid-template-columns:1fr 150px 100px 120px;gap:1rem;padding:1rem;background:rgba(0,0,0,0.2);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;"><div>Match</div><div>Score</div><div>Screenshot</div><div>Actions</div></div>';
-                
                 data.forEach(v => {
-                    html += `
-                    <div style="display:grid;grid-template-columns:1fr 150px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
-                        <div>
-                            <div style="font-weight:bold;color:var(--text-light);">${v.tournament_name}</div>
-                            <div style="color:var(--text-muted);font-size:0.75rem;">${v.submitter_name} <span style="margin: 0 4px; color: var(--text-dim);">vs</span> ${v.opponent_name}</div>
-                        </div>
-                        <div style="color:var(--text-light);font-weight:bold;font-size:1.1rem;font-family:\\'Orbitron\\',sans-serif;">${v.my_score} - ${v.opponent_score}</div>
-                        <div><a href="${v.screenshot_url}" target="_blank" class="btn btn-outline btn-sm" style="padding:0.2rem 0.5rem;"><i class="fas fa-image"></i> View</a></div>
+                    html += `<div style="display:grid;grid-template-columns:1fr 150px 100px 120px;gap:1rem;padding:1rem;border-top:1px solid rgba(255,255,255,0.05);align-items:center;font-size:0.85rem;">
+                        <div><div style="font-weight:bold;color:var(--text-light);">${v.tournament_name}</div><div style="color:var(--text-muted);font-size:0.75rem;">${v.submitter_name} vs ${v.opponent_name}</div></div>
+                        <div style="color:var(--text-light);font-weight:bold;font-size:1.1rem;font-family:'Orbitron',sans-serif;">${v.my_score} - ${v.opponent_score}</div>
+                        <div><a href="${v.screenshot_url}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-image"></i> View</a></div>
                         <div style="display:flex;gap:5px;">
-                            <button class="btn btn-primary btn-sm" onclick="approveVerification(${v.id}, this)" title="Approve"><i class="fas fa-check"></i></button>
-                            <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectVerification(${v.id}, this)" title="Reject"><i class="fas fa-times"></i></button>
+                            <button class="btn btn-primary btn-sm" onclick="approveVerification(${v.id}, this)"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline btn-sm" style="color:var(--accent);border-color:var(--accent);" onclick="rejectVerification(${v.id}, this)"><i class="fas fa-times"></i></button>
                         </div>
                     </div>`;
                 });
                 html += '</div>';
                 verifCard.innerHTML = html;
-            } else {
-                verifCard.innerHTML = `<div class="empty-state">
-                    <div class="empty-icon"><i class="fas fa-camera"></i></div>
-                    <div class="empty-title">No Pending Verifications</div>
-                    <div class="empty-sub">All match results have been reviewed.</div>
-                </div>`;
             }
-        } catch(err) {
-            console.error('Failed to load admin verifications', err);
-        }
+        } catch(err) { console.error('Failed to load verifications', err); }
     }
 
     async function approveVerification(id, btn) {
@@ -390,17 +315,10 @@
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.ok) {
-                showToast('Match result approved', 'success');
-                fetchAdminVerifications();
-            } else {
-                showToast('Failed to approve', 'error');
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                btn.disabled = false;
-            }
-        } catch(err) {
-            showToast('Server error', 'error');
-        }
+            if (res.ok) { showToast('Match approved', 'success'); fetchAdminVerifications(); }
+            else { showToast('Failed to approve', 'error'); }
+        } catch(err) { showToast('Server error', 'error'); }
+        finally { btn.innerHTML = '<i class="fas fa-check"></i>'; btn.disabled = false; }
     }
 
     async function rejectVerification(id, btn) {
@@ -414,17 +332,10 @@
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.ok) {
-                showToast('Match result rejected', 'success');
-                fetchAdminVerifications();
-            } else {
-                showToast('Failed to reject', 'error');
-                btn.innerHTML = '<i class="fas fa-times"></i>';
-                btn.disabled = false;
-            }
-        } catch(err) {
-            showToast('Server error', 'error');
-        }
+            if (res.ok) { showToast('Match rejected', 'success'); fetchAdminVerifications(); }
+            else { showToast('Failed to reject', 'error'); }
+        } catch(err) { showToast('Server error', 'error'); }
+        finally { btn.innerHTML = '<i class="fas fa-times"></i>'; btn.disabled = false; }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
