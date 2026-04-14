@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// ✅ FIX: Destructure pool + correct path (both files at root)
+// ✅ FIX 1: Destructure pool + correct path (both files at root)
 const { pool } = require('./db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_bongo_key_change_me_later';
@@ -55,7 +55,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ✅ EXPORT authenticate middleware for protected routes
+// ✅ FIX 2: Export authenticate middleware for protected routes
 const authenticate = (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
@@ -69,6 +69,6 @@ const authenticate = (req, res, next) => {
     }
 };
 
-// ✅ Export both router and middleware
+// ✅ Export BOTH router AND middleware
 module.exports = router;
 module.exports.authenticate = authenticate;
