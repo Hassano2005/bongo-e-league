@@ -56,66 +56,71 @@
 </div>
 
 <script src="main.js"></script>
+<script src="main.js"></script>
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-const tId = urlParams.get('id');
+    // 🔗 Your live backend API - ADD THIS CONSTANT
+    const API_BASE = 'https://bongo-e-league-31xh.onrender.com';
 
-async function loadTournament() {
-    if(!tId) { window.location.href = 'tournaments.html'; return; }
-    try {
-        const res = await fetch(`/api/tournaments/${tId}/details`);
-        const data = await res.json();
-        
-        if(!res.ok) { 
-            document.getElementById('tHeader').innerHTML = `<div style="max-width:var(--max-width);margin:0 auto;padding:2rem;color:var(--accent);"><h3>Error: ${data.error}</h3></div>`; 
-            return; 
-        }
-        
-        const { tournament: t, players } = data;
-        
-        document.getElementById('tHeader').innerHTML = `
-            <div style="max-width: var(--max-width); margin: 0 auto;">
-                <a href="tournaments.html" style="color:var(--primary);text-decoration:none;font-size:0.9rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-arrow-left"></i> Tournament Directory</a>
-                <h1 class="t-title" style="margin-top:1.5rem;">${t.name}</h1>
-                <div class="t-info">
-                    <span><i class="fas fa-sitemap" style="color:var(--primary);"></i> <strong style="color:var(--text-light);">${t.status.toUpperCase()}</strong></span>
-                    <span><i class="fas fa-coins" style="color:var(--accent-gold);"></i> <strong style="color:var(--accent-gold);">${t.prize_pool} TZS Prize</strong></span>
-                    <span><i class="fas fa-ticket-alt" style="color:var(--text-light);"></i> <strong>${t.entry_fee} TZS Entry</strong></span>
-                    <span><i class="fas fa-users" style="color:var(--primary);"></i> <strong style="color:var(--text-light);">${players.length} Registered</strong></span>
-                </div>
-            </div>
-        `;
-        
-        if (players.length > 0) {
-            let html = '';
-            players.forEach((p, i) => {
-                let badge = '';
-                if(p.placement === 1) badge = '<span class="badge" style="background:rgba(245,166,35,0.15);color:#f5a623;border-color:#f5a623;font-size:0.75rem;">🥇 1st Place</span>';
-                else if(p.placement === 2) badge = '<span class="badge" style="background:rgba(176,190,197,0.15);color:#b0bec5;border-color:#b0bec5;font-size:0.75rem;">🥈 2nd Place</span>';
-                else if(p.placement === 3) badge = '<span class="badge" style="background:rgba(205,127,50,0.15);color:#cd7f32;border-color:#cd7f32;font-size:0.75rem;">🥉 3rd Place</span>';
-                else badge = '<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text-muted);border:1px solid transparent;">Active</span>';
-                
-                html += `
-                <div class="player-row">
-                    <div style="font-weight:700;color:var(--text-light);font-size:1.15rem;">
-                        <span style="color:var(--text-muted);font-weight:400;margin-right:15px;font-size:0.9rem;font-family:'Orbitron',sans-serif;">${(i+1).toString().padStart(2, '0')}</span>
-                        ${p.username}
-                        <span style="margin-left:15px;">${badge}</span>
+    const urlParams = new URLSearchParams(window.location.search);
+    const tId = urlParams.get('id');
+
+    async function loadTournament() {
+        if(!tId) { window.location.href = 'tournaments.html'; return; }
+        try {
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/tournaments/${tId}/details`);
+            const data = await res.json();
+            
+            if(!res.ok) { 
+                document.getElementById('tHeader').innerHTML = `<div style="max-width:var(--max-width);margin:0 auto;padding:2rem;color:var(--accent);"><h3>Error: ${data.error}</h3></div>`; 
+                return; 
+            }
+            
+            const { tournament: t, players } = data;
+            
+            document.getElementById('tHeader').innerHTML = `
+                <div style="max-width: var(--max-width); margin: 0 auto;">
+                    <a href="tournaments.html" style="color:var(--primary);text-decoration:none;font-size:0.9rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-arrow-left"></i> Tournament Directory</a>
+                    <h1 class="t-title" style="margin-top:1.5rem;">${t.name}</h1>
+                    <div class="t-info">
+                        <span><i class="fas fa-sitemap" style="color:var(--primary);"></i> <strong style="color:var(--text-light);">${t.status.toUpperCase()}</strong></span>
+                        <span><i class="fas fa-coins" style="color:var(--accent-gold);"></i> <strong style="color:var(--accent-gold);">${t.prize_pool} TZS Prize</strong></span>
+                        <span><i class="fas fa-ticket-alt" style="color:var(--text-light);"></i> <strong>${t.entry_fee} TZS Entry</strong></span>
+                        <span><i class="fas fa-users" style="color:var(--primary);"></i> <strong style="color:var(--text-light);">${players.length} Registered</strong></span>
                     </div>
-                    <div style="font-size:0.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Joined ${new Date(p.joined_at).toLocaleDateString()}</div>
-                </div>`;
-            });
-            document.getElementById('playersCard').innerHTML = html;
-        } else {
-            document.getElementById('playersCard').innerHTML = '<div style="padding:4rem;text-align:center;color:var(--text-muted);font-size:1.1rem;"><i class="fas fa-ghost" style="display:block;font-size:2.5rem;margin-bottom:1rem;opacity:0.5;"></i>No players have stepped up yet.</div>';
+                </div>
+            `;
+            
+            if (players.length > 0) {
+                let html = '';
+                players.forEach((p, i) => {
+                    let badge = '';
+                    if(p.placement === 1) badge = '<span class="badge" style="background:rgba(245,166,35,0.15);color:#f5a623;border-color:#f5a623;font-size:0.75rem;">🥇 1st Place</span>';
+                    else if(p.placement === 2) badge = '<span class="badge" style="background:rgba(176,190,197,0.15);color:#b0bec5;border-color:#b0bec5;font-size:0.75rem;">🥈 2nd Place</span>';
+                    else if(p.placement === 3) badge = '<span class="badge" style="background:rgba(205,127,50,0.15);color:#cd7f32;border-color:#cd7f32;font-size:0.75rem;">🥉 3rd Place</span>';
+                    else badge = '<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text-muted);border:1px solid transparent;">Active</span>';
+                    
+                    html += `
+                    <div class="player-row">
+                        <div style="font-weight:700;color:var(--text-light);font-size:1.15rem;">
+                            <span style="color:var(--text-muted);font-weight:400;margin-right:15px;font-size:0.9rem;font-family:'Orbitron',sans-serif;">${(i+1).toString().padStart(2, '0')}</span>
+                            ${p.username}
+                            <span style="margin-left:15px;">${badge}</span>
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Joined ${new Date(p.joined_at).toLocaleDateString()}</div>
+                    </div>`;
+                });
+                document.getElementById('playersCard').innerHTML = html;
+            } else {
+                document.getElementById('playersCard').innerHTML = '<div style="padding:4rem;text-align:center;color:var(--text-muted);font-size:1.1rem;"><i class="fas fa-ghost" style="display:block;font-size:2.5rem;margin-bottom:1rem;opacity:0.5;"></i>No players have stepped up yet.</div>';
+            }
+        } catch(e) {
+            console.error(e);
+            document.getElementById('tHeader').innerHTML = `<h3 style="color:var(--accent);padding:2rem;text-align:center;">Server connection failed</h3>`;
         }
-    } catch(e) {
-        console.error(e);
-        document.getElementById('tHeader').innerHTML = `<h3 style="color:var(--accent);padding:2rem;text-align:center;">Server connection failed</h3>`;
     }
-}
 
-document.addEventListener('DOMContentLoaded', loadTournament);
+    document.addEventListener('DOMContentLoaded', loadTournament);
 </script>
 </body>
 </html>
