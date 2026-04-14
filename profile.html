@@ -342,18 +342,21 @@
         <span>Made in 🇹🇿 Tanzania</span>
     </div>
 </footer>
-
-<script src="main.js"></script>
+    <script src="main.js"></script>
 <script>
+    // 🔗 Your live backend API - ADD THIS CONSTANT
+    const API_BASE = 'https://bongo-e-league-31xh.onrender.com';
+
     document.addEventListener('DOMContentLoaded', async () => {
         const token = localStorage.getItem('league_token');
         if (!token) {
-            window.location.href = 'index.html'; // Redirect to login if not authenticated
+            window.location.href = 'index.html';
             return;
         }
 
         try {
-            const res = await fetch('/api/users/profile', {
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/users/profile`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -371,34 +374,10 @@
 
             // Update UI
             document.querySelector('.profile-name-h1').textContent = user.username;
-            
             const played = userTournaments.length;
             document.querySelectorAll('.mini-stat-val')[1].textContent = played;
             
-            // Active events mapping
-            const eventsContainer = document.querySelector('.card[style*="border:1px solid rgba(0, 210, 255, 0.2)"] div');
-            if(userTournaments && userTournaments.length > 0) {
-                let html = `<h3 style="font-family:'Orbitron',sans-serif; font-size:0.85rem; margin-bottom:0.5rem;">My Active Events (${userTournaments.length})</h3>`;
-                userTournaments.forEach(t => {
-                    html += `
-                    <div style="padding:1.25rem; background:rgba(255,255,255,0.02); border:1px solid var(--border-light); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:700; color:var(--text-light); margin-bottom:5px; font-size:1.05rem;">${t.name}</div>
-                            <div style="font-size:0.8rem; color:var(--text-muted);">Status: <span style="color:var(--primary);">${t.status}</span></div>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="badge" style="background:rgba(0,210,255,0.1); color:var(--primary);">Registered</div>
-                            <a class="btn btn-outline btn-sm" href="tournament_details.html?id=${t.id}"><i class="fas fa-eye"></i> View</a>
-                        </div>
-                    </div>`;
-                });
-                eventsContainer.innerHTML = html;
-            } else {
-                eventsContainer.innerHTML = `
-                    <h3 style="font-family:'Orbitron',sans-serif; font-size:0.85rem; margin-bottom:0.5rem;">My Active Events</h3>
-                    <p style="font-size:0.8rem; color:var(--text-muted);">You are not currently enrolled in any active tournaments.</p>
-                `;
-            }
+            // ... rest of your profile update code ...
 
         } catch (err) {
             console.error(err);
@@ -424,7 +403,8 @@
         
         try {
             const token = localStorage.getItem('league_token');
-            const res = await fetch(`/api/tournaments/${tournamentId}/opponents`, {
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/tournaments/${tournamentId}/opponents`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -464,7 +444,8 @@
         btn.disabled = true;
 
         try {
-            const res = await fetch('/api/matches/verify', {
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/matches/verify`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
