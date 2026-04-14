@@ -290,6 +290,25 @@
     <!-- We use the existing main.js for toast notifications -->
     <script src="main.js"></script>
     <script>
+        <script>
+    // 🔗 Your live backend API - CHANGE THIS IF NEEDED
+    const API_BASE = 'https://bongo-e-league-31xh.onrender.com';
+    
+    // ... rest of your code ...
+    
+    async function handleAuth(event, type) {
+        // ...
+        let url;
+        if (type === 'login') {
+            url = `${API_BASE}/api/auth/login`;  // ✅ Full URL
+            // ...
+        } else {
+            url = `${API_BASE}/api/auth/register`;  // ✅ Full URL
+            // ...
+        }
+        // ...
+    }
+</script>
         function switchTo(type) {
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
