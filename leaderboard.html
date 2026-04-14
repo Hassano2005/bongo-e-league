@@ -165,12 +165,15 @@
         <span>Made in 🇹🇿 Tanzania</span>
     </div>
 </footer>
-
-<script src="main.js"></script>
+    <script src="main.js"></script>
 <script>
+    // 🔗 Your live backend API - ADD THIS CONSTANT
+    const API_BASE = 'https://bongo-e-league-31xh.onrender.com';
+
     document.addEventListener('DOMContentLoaded', async () => {
         try {
-            const res = await fetch('/api/leaderboard');
+            // ✅ Use full URL:
+            const res = await fetch(`${API_BASE}/api/leaderboard`);
             const data = await res.json();
             
             if (data && data.length > 0) {
@@ -230,9 +233,9 @@
                 }
             }
             
-            // Load Records
+            // Load Records - ✅ Use full URL:
             try {
-                const recRes = await fetch('/api/leaderboard/records');
+                const recRes = await fetch(`${API_BASE}/api/leaderboard/records`);
                 const recData = await recRes.json();
                 if(recData.topScorers && recData.topScorers.length > 0) {
                     let rHtml = '';
