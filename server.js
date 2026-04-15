@@ -1,10 +1,10 @@
-// server.js - Complete with Auth + Profile + Tournaments
+// server.js - FIXED
 const express = require('express');
 const cors = require('cors');
 const { pool, dbReady } = require('./db');
 const authRouter = require('./auth');
-// ✅ FIX: Single import of authenticate (removed duplicate)
-const { authenticate } = require('./auth');
+// ✅ Only import authenticate ONCE
+const { authenticate } = require('./auth'); 
 
 const app = express();
 app.use(cors());
@@ -48,12 +48,11 @@ app.post('/api/tournaments', authenticate, async (req, res) => {
   }
 });
 
-// ✅ GET /api/tournaments - List all tournaments
+// ✅ GET /api/tournaments
 app.get('/api/tournaments', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT t.*, COUNT(p.id) as joined_count FROM tournaments t 
-       LEFT JOIN participants p ON p.tournament_id = t.id GROUP BY t.id ORDER BY t.created_at DESC`
+      `SELECT t.*, COUNT(p.id) as joined_count FROM tournaments t LEFT JOIN participants p ON p.tournament_id = t.id GROUP BY t.id ORDER BY t.created_at DESC`
     );
     res.json(result.rows);
   } catch (err) {
@@ -62,23 +61,16 @@ app.get('/api/tournaments', async (req, res) => {
   }
 });
 
-// ✅ GET /api/users/profile - Returns current user data
+// ✅ GET /api/users/profile
 app.get('/api/users/profile', authenticate, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, username, role, created_at, 
-              COALESCE(wins, 0) as wins,
-              COALESCE(goals, 0) as goals,
-              COALESCE(points, 0) as points,
-              COALESCE(earned, 0) as earned
-       FROM users WHERE id = $1`,
+      `SELECT id, username, role, created_at, COALESCE(wins, 0) as wins, COALESCE(goals, 0) as goals, COALESCE(points, 0) as points, COALESCE(earned, 0) as earned FROM users WHERE id = $1`,
       [req.userId]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     const tours = await pool.query(
-      `SELECT t.id, t.name, t.status FROM tournaments t
-       JOIN participants p ON p.tournament_id = t.id
-       WHERE p.user_id = $1 AND t.status IN ('upcoming', 'live')`,
+      `SELECT t.id, t.name, t.status FROM tournaments t JOIN participants p ON p.tournament_id = t.id WHERE p.user_id = $1 AND t.status IN ('upcoming', 'live')`,
       [req.userId]
     );
     res.json({ user: result.rows[0], joined_tournaments: tours.rows });
@@ -88,7 +80,7 @@ app.get('/api/users/profile', authenticate, async (req, res) => {
   }
 });
 
-// ✅ Start server after DB is ready
+// ✅ Start server
 dbReady.then(() => {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, '0.0.0.0', () => {
