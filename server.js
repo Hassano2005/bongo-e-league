@@ -1,10 +1,10 @@
 // server.js - Complete with Auth + Profile + Tournaments
-const { authenticate } = require('./auth'); // ✅ Must match auth.js export
 const express = require('express');
 const cors = require('cors');
 const { pool, dbReady } = require('./db');
 const authRouter = require('./auth');
-const { authenticate } = require('./auth'); // ✅ Import middleware
+// ✅ FIX: Single import of authenticate (removed duplicate)
+const { authenticate } = require('./auth');
 
 const app = express();
 app.use(cors());
