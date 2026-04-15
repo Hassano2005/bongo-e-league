@@ -1,4 +1,5 @@
 // server.js - Complete with Auth + Profile + Tournaments
+const { authenticate } = require('./auth'); // ✅ Must match auth.js export
 const express = require('express');
 const cors = require('cors');
 const { pool, dbReady } = require('./db');
